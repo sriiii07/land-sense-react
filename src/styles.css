@@ -1,0 +1,138 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Design system definition.
+ *
+ * The @theme inline block maps CSS custom properties to Tailwind utility
+ * classes (e.g. --color-primary -> bg-primary, text-primary).
+ *
+ * The :root and .dark blocks define the actual color values using oklch.
+ * All colors MUST use oklch format.
+ *
+ * To add a new semantic color:
+ * 1. Add the variable to :root (light value) and .dark (dark value)
+ * 2. Register it in @theme inline as --color-<name>: var(--<name>)
+ */
+
+@theme inline {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+
+  /* Risk semantic tokens — the ONLY colour vocabulary of the product */
+  --color-risk-low: var(--risk-low);
+  --color-risk-low-bg: var(--risk-low-bg);
+  --color-risk-moderate: var(--risk-moderate);
+  --color-risk-moderate-bg: var(--risk-moderate-bg);
+  --color-risk-high: var(--risk-high);
+  --color-risk-high-bg: var(--risk-high-bg);
+  --color-risk-critical: var(--risk-critical);
+  --color-risk-critical-bg: var(--risk-critical-bg);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+
+:root {
+  /* Government interface: square-ish corners, white surfaces, dark navy accents. */
+  --radius: 0.25rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.21 0.03 256);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.21 0.03 256);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.21 0.03 256);
+  /* Primary: government dark blue */
+  --primary: oklch(0.34 0.09 258);
+  --primary-foreground: oklch(0.99 0.002 250);
+  /* Secondary: light gray surface */
+  --secondary: oklch(0.968 0.004 250);
+  --secondary-foreground: oklch(0.28 0.05 258);
+  --muted: oklch(0.968 0.004 250);
+  --muted-foreground: oklch(0.5 0.02 256);
+  --accent: oklch(0.955 0.008 250);
+  --accent-foreground: oklch(0.28 0.05 258);
+  --destructive: oklch(0.53 0.21 27);
+  --destructive-foreground: oklch(0.99 0.002 250);
+  --border: oklch(0.905 0.008 250);
+  --input: oklch(0.885 0.008 250);
+  --ring: oklch(0.34 0.09 258);
+
+  /* Risk scale — Low (green), Moderate (yellow), High (orange), Critical (red) */
+  --risk-low: oklch(0.5 0.13 150);
+  --risk-low-bg: oklch(0.95 0.04 150);
+  --risk-moderate: oklch(0.55 0.12 85);
+  --risk-moderate-bg: oklch(0.96 0.06 95);
+  --risk-high: oklch(0.58 0.16 55);
+  --risk-high-bg: oklch(0.95 0.05 60);
+  --risk-critical: oklch(0.51 0.21 27);
+  --risk-critical-bg: oklch(0.95 0.04 25);
+
+  --chart-1: oklch(0.34 0.09 258);
+  --chart-2: oklch(0.5 0.13 150);
+  --chart-3: oklch(0.58 0.16 55);
+  --chart-4: oklch(0.51 0.21 27);
+  --chart-5: oklch(0.55 0.12 85);
+
+  --sidebar: oklch(0.28 0.06 258);
+  --sidebar-foreground: oklch(0.93 0.01 250);
+  --sidebar-primary: oklch(0.99 0.002 250);
+  --sidebar-primary-foreground: oklch(0.28 0.06 258);
+  --sidebar-accent: oklch(0.36 0.07 258);
+  --sidebar-accent-foreground: oklch(0.99 0.002 250);
+  --sidebar-border: oklch(0.36 0.06 258);
+  --sidebar-ring: oklch(0.7 0.04 256);
+}
+
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+  }
+}
