@@ -88,6 +88,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "author", content: "Kerala State Disaster Management Authority" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:title", content: "BHOOSAKTHI — AI Landslide Early Warning & Response" },
+      { name: "twitter:title", content: "BHOOSAKTHI — AI Landslide Early Warning & Response" },
+      { property: "og:description", content: "24-hour advance landslide prediction and emergency response platform for district disaster management authorities." },
+      { name: "twitter:description", content: "24-hour advance landslide prediction and emergency response platform for district disaster management authorities." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/1f2ef062-8908-4170-b82d-e28e216d675f/id-preview-88e8d945--67dee631-28b4-48e3-8ba6-5434197cc7e9.lovable.app-1785590992835.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/1f2ef062-8908-4170-b82d-e28e216d675f/id-preview-88e8d945--67dee631-28b4-48e3-8ba6-5434197cc7e9.lovable.app-1785590992835.png" },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },

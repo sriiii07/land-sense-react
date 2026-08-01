@@ -22,7 +22,7 @@ export const Route = createFileRoute("/")({
       {
         property: "og:description",
         content:
-          "Village-level landslide risk scoring, officer-approved alerts, citizen safety tracking and shelter coordination.",
+          "24-hour advance landslide prediction and emergency response platform for district disaster management authorities.",
       },
     ],
   }),
