@@ -1,10 +1,12 @@
 /** Settings: officer profile, notification channels and system thresholds. */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { ConsoleLayout } from "@/components/layout/ConsoleLayout";
 import { PageHeader } from "@/components/common/PageHeader";
 import { Panel } from "@/components/common/Panel";
-import { officerProfile } from "@/data/mock-data";
+import { officerProfile as mockOfficerProfile } from "@/data/mock-data";
+import { getCurrentUser } from "@/lib/api";
+import { useAuth, useRequireAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/settings")({
   head: () => ({
@@ -33,12 +35,30 @@ const notificationChannels = [
 ];
 
 function SettingsPage() {
+  useRequireAuth();
+  const { user } = useAuth();
   const [enabled, setEnabled] = useState<Record<string, boolean>>({
     push: true,
     sms: true,
     email: true,
     radio: false,
   });
+  const [officerProfile, setOfficerProfile] = useState(mockOfficerProfile);
+
+  useEffect(() => {
+    if (!user) {
+      setOfficerProfile(mockOfficerProfile);
+      return;
+    }
+
+    setOfficerProfile({
+      ...mockOfficerProfile,
+      name: user.full_name,
+      designation: user.role === "authority" ? "Authority officer" : "Citizen user",
+      employeeId: String(user.id),
+      email: user.email,
+    });
+  }, [user]);
 
   return (
     <ConsoleLayout>

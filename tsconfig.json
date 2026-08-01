@@ -11,7 +11,13 @@
       "ES2022",
       "DOM",
       "DOM.Iterable"
+      
     ],
+    "ignoreDeprecations": "6.0",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    },
     "types": [
       "vite/client"
     ],

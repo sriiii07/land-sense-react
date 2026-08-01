@@ -1,0 +1,22 @@
+# LandSense backend — Python dependencies
+# Install with: pip install -r backend/requirements.txt
+
+# --- Web framework ---
+fastapi>=0.110.0
+uvicorn[standard]>=0.29.0
+python-multipart>=0.0.9        # required by FastAPI for OAuth2PasswordRequestForm
+
+# --- Auth ---
+python-jose[cryptography]>=3.3.0   # JWT encode/decode
+bcrypt>=4.0.0,<4.1.0                # password hashing (pinned: 4.1+ breaks some passlib-adjacent tooling)
+
+# --- Data validation ---
+pydantic>=2.6.0
+email-validator>=2.1.0          # required for pydantic EmailStr
+
+# --- Data / ML ---
+pandas>=2.1.0
+numpy>=1.26.0
+scikit-learn>=1.4.0
+joblib>=1.3.0
+shap>=0.45.0                    # optional: explain.py falls back to rule-based explanations if absent

@@ -2,6 +2,7 @@
 import { useState, type FormEvent } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { MountainSnow, MailCheck } from "lucide-react";
+import { forgotPassword } from "@/lib/api";
 
 export const Route = createFileRoute("/forgot-password")({
   head: () => ({
@@ -24,11 +25,23 @@ export const Route = createFileRoute("/forgot-password")({
 
 function ForgotPasswordPage() {
   const [submitted, setSubmitted] = useState(false);
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // POST /api/auth/forgot-password in production.
-  const handleSubmit = (event: FormEvent) => {
+  const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    setSubmitted(true);
+    setError("");
+    setIsSubmitting(true);
+
+    try {
+      await forgotPassword(email);
+      setSubmitted(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to submit your request.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -68,26 +81,28 @@ function ForgotPasswordPage() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label
-                    htmlFor="recovery-id"
-                    className="block text-xs font-medium text-foreground"
-                  >
-                    Officer ID
+                  <label htmlFor="recovery-email" className="block text-xs font-medium text-foreground">
+                    Email address
                   </label>
                   <input
-                    id="recovery-id"
-                    name="officerId"
-                    type="text"
+                    id="recovery-email"
+                    name="email"
+                    type="email"
                     required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     className="w-full rounded border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-ring focus:ring-1 focus:ring-ring focus:outline-none"
                   />
                 </div>
 
+                {error ? <p className="text-sm text-risk-critical">{error}</p> : null}
+
                 <button
                   type="submit"
-                  className="w-full rounded bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                  disabled={isSubmitting}
+                  className="w-full rounded bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-70"
                 >
-                  Send reset link
+                  {isSubmitting ? "Sending..." : "Send reset link"}
                 </button>
               </form>
             )}

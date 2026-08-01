@@ -1,12 +1,14 @@
 /** Citizen monitoring: who is safe, who needs help, who has not responded. */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { ConsoleLayout } from "@/components/layout/ConsoleLayout";
 import { PageHeader } from "@/components/common/PageHeader";
 import { Panel } from "@/components/common/Panel";
 import { StatCard } from "@/components/common/StatCard";
 import { StatusBadge } from "@/components/common/StatusBadge";
-import { citizens, type CitizenStatus } from "@/data/mock-data";
+import { citizens as mockCitizens, type CitizenStatus } from "@/data/mock-data";
+import { getCitizens } from "@/lib/api";
+import { useRequireAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/citizens")({
@@ -31,7 +33,32 @@ export const Route = createFileRoute("/citizens")({
 const filters = ["All", "Needs Help", "No Response", "Safe"] as const;
 
 function CitizenMonitoringPage() {
+  useRequireAuth();
   const [filter, setFilter] = useState<(typeof filters)[number]>("All");
+  const [citizens, setCitizens] = useState(mockCitizens);
+
+  useEffect(() => {
+    let active = true;
+    void getCitizens().then((rows) => {
+      if (!active) return;
+      setCitizens(rows.map((row) => ({
+        id: `CTZ-${row.id}`,
+        name: row.name,
+        phone: "",
+        village: `Village ${row.village_id}`,
+        location: `${row.location_lat}, ${row.location_lng}`,
+        status: row.status === "Need Help" ? "Needs Help" : row.status === "I'm Safe" ? "Safe" : "No Response",
+        lastSeen: row.last_updated,
+        members: 1,
+      })));
+    }).catch(() => {
+      setCitizens(mockCitizens);
+    });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const count = (status: CitizenStatus) => citizens.filter((c) => c.status === status).length;
   const rows = filter === "All" ? citizens : citizens.filter((c) => c.status === filter);

@@ -1,4 +1,5 @@
 /** Analytics: rainfall trend, risk trend and model performance. */
+import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import {
   Bar,
@@ -14,7 +15,9 @@ import {
 import { ConsoleLayout } from "@/components/layout/ConsoleLayout";
 import { PageHeader } from "@/components/common/PageHeader";
 import { Panel } from "@/components/common/Panel";
-import { modelComparison, modelPerformance, rainfallTrend, riskHistory } from "@/data/mock-data";
+import { modelComparison as mockModelComparison, modelPerformance as mockModelPerformance, rainfallTrend as mockRainfallTrend, riskHistory as mockRiskHistory } from "@/data/mock-data";
+import { getModelPerformance } from "@/lib/api";
+import { useRequireAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/analytics")({
   head: () => ({
@@ -40,6 +43,34 @@ const chartTooltip = {
 };
 
 function AnalyticsPage() {
+  useRequireAuth();
+  const [modelPerformance, setModelPerformance] = useState(mockModelPerformance);
+  const [rainfallTrend, setRainfallTrend] = useState(mockRainfallTrend);
+  const [riskHistory, setRiskHistory] = useState(mockRiskHistory);
+
+  useEffect(() => {
+    let active = true;
+    void getModelPerformance().then((metrics) => {
+      if (!active) return;
+      setModelPerformance([
+        { metric: "Accuracy", value: metrics.accuracy.toFixed(2), note: "Latest backend evaluation" },
+        { metric: "Precision", value: metrics.precision.toFixed(2), note: "Latest backend evaluation" },
+        { metric: "Recall", value: metrics.recall.toFixed(2), note: "Latest backend evaluation" },
+        { metric: "F1 score", value: metrics.f1_score.toFixed(2), note: "Latest backend evaluation" },
+        { metric: "ROC-AUC", value: metrics.auc_roc.toFixed(2), note: "Latest backend evaluation" },
+        { metric: "Evaluated at", value: metrics.evaluated_at, note: "Latest backend evaluation" },
+      ]);
+    }).catch(() => {
+      setModelPerformance(mockModelPerformance);
+      setRainfallTrend(mockRainfallTrend);
+      setRiskHistory(mockRiskHistory);
+    });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
   return (
     <ConsoleLayout>
       <PageHeader
@@ -110,7 +141,7 @@ function AnalyticsPage() {
         <Panel title="Candidate model comparison" description="F1 and recall by algorithm">
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={modelComparison} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
+              <BarChart data={mockModelComparison} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
                 <CartesianGrid stroke="var(--border)" vertical={false} />
                 <XAxis dataKey="model" stroke="var(--muted-foreground)" fontSize={11} tickLine={false} />
                 <YAxis domain={[0, 1]} stroke="var(--muted-foreground)" fontSize={11} tickLine={false} />

@@ -1,7 +1,9 @@
-/** Authority sign-in. Credentials are validated by the backend in production. */
-import { useState, type FormEvent } from "react";
+/** Authority sign-in. Credentials are validated by the backend. */
+import { useEffect, useState, type FormEvent } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { MountainSnow, Lock } from "lucide-react";
+import { clearAuthToken, login, saveAuthToken } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -24,13 +26,34 @@ export const Route = createFileRoute("/login")({
 
 function LoginPage() {
   const navigate = useNavigate();
-  const [officerId, setOfficerId] = useState("KSDMA-WYD-2291");
-  const [password, setPassword] = useState("");
+  const auth = useAuth();
+  const [email, setEmail] = useState("anil.kumar@ddma.kerala.gov.in");
+  const [password, setPassword] = useState("admin123");
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // POST /api/auth/login in production; the console is opened on success.
-  const handleSubmit = (event: FormEvent) => {
+  useEffect(() => {
+    if (!auth.loading && auth.user) {
+      navigate({ to: "/dashboard" });
+    }
+  }, [auth.loading, auth.user, navigate]);
+
+  const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    navigate({ to: "/dashboard" });
+    setError("");
+    setIsSubmitting(true);
+
+    try {
+      const response = await login(email, password);
+      saveAuthToken(response.access_token);
+      await auth.refreshUser();
+      navigate({ to: "/dashboard" });
+    } catch (err) {
+      clearAuthToken();
+      setError(err instanceof Error ? err.message : "Unable to sign in. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -61,17 +84,17 @@ function LoginPage() {
             </div>
 
             <div className="space-y-1.5">
-              <label htmlFor="officer-id" className="block text-xs font-medium text-foreground">
-                Officer ID
+              <label htmlFor="email" className="block text-xs font-medium text-foreground">
+                Email address
               </label>
               <input
-                id="officer-id"
-                name="officerId"
-                type="text"
+                id="email"
+                name="email"
+                type="email"
                 required
                 autoComplete="username"
-                value={officerId}
-                onChange={(e) => setOfficerId(e.target.value)}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="w-full rounded border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-ring focus:ring-1 focus:ring-ring focus:outline-none"
               />
             </div>
@@ -102,12 +125,15 @@ function LoginPage() {
               </Link>
             </div>
 
+            {error ? <p className="text-sm text-risk-critical">{error}</p> : null}
+
             <button
               type="submit"
-              className="inline-flex w-full items-center justify-center gap-2 rounded bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+              disabled={isSubmitting}
+              className="inline-flex w-full items-center justify-center gap-2 rounded bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-70"
             >
               <Lock aria-hidden className="size-4" />
-              Sign in
+              {isSubmitting ? "Signing in..." : "Sign in"}
             </button>
           </form>
 

@@ -1,11 +1,14 @@
 /** Shelter management: capacity, occupancy, remaining space and navigation. */
+import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Navigation, Phone } from "lucide-react";
 import { ConsoleLayout } from "@/components/layout/ConsoleLayout";
 import { PageHeader } from "@/components/common/PageHeader";
 import { Panel } from "@/components/common/Panel";
 import { StatCard } from "@/components/common/StatCard";
-import { shelters } from "@/data/mock-data";
+import { shelters as mockShelters } from "@/data/mock-data";
+import { getShelters } from "@/lib/api";
+import { useRequireAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/shelters")({
@@ -28,6 +31,31 @@ export const Route = createFileRoute("/shelters")({
 });
 
 function ShelterManagementPage() {
+  useRequireAuth();
+  const [shelters, setShelters] = useState(mockShelters);
+
+  useEffect(() => {
+    let active = true;
+    void getShelters().then((rows) => {
+      if (!active) return;
+      setShelters(rows.map((row) => ({
+        id: `SH-${row.id}`,
+        name: row.name,
+        village: `Village ${row.village_id}`,
+        capacity: row.capacity,
+        occupied: row.current_occupancy,
+        distanceKm: 1,
+        contact: row.contact_number,
+      })));
+    }).catch(() => {
+      setShelters(mockShelters);
+    });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
   const capacity = shelters.reduce((s, x) => s + x.capacity, 0);
   const occupied = shelters.reduce((s, x) => s + x.occupied, 0);
 
