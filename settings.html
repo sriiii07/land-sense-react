@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Settings — SAFEGROUND AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<div id="app"></div>
+
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<script src="js/data.js"></script>
+<script src="js/layout.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const off = APP_DATA.officer;
+
+  const content = `
+    <div class="grid grid-2">
+      <!-- Officer Profile -->
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Officer Profile</h2>
+          <span class="panel-meta">Currently signed in</span>
+        </div>
+        <div class="field">
+          <label>Full Name</label>
+          <input type="text" value="${off.name}" />
+        </div>
+        <div class="field">
+          <label>Role</label>
+          <input type="text" value="${off.role}" />
+        </div>
+        <div class="field">
+          <label>District</label>
+          <input type="text" value="${off.district}" />
+        </div>
+        <div class="field">
+          <label>Official Email</label>
+          <input type="email" value="${off.email}" />
+        </div>
+        <button class="btn btn--primary"><i data-lucide="save"></i> Save Profile</button>
+      </div>
+
+      <!-- Alert Preferences -->
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Alert Preferences</h2>
+          <span class="panel-meta">Control notification behaviour</span>
+        </div>
+
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-row-label">Critical alerts</div>
+            <div class="toggle-row-sub">Push + SMS for all critical predictions</div>
+          </div>
+          <label class="switch"><input type="checkbox" checked /><span class="switch-track"></span></label>
+        </div>
+
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-row-label">High-risk alerts</div>
+            <div class="toggle-row-sub">Push notifications only</div>
+          </div>
+          <label class="switch"><input type="checkbox" checked /><span class="switch-track"></span></label>
+        </div>
+
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-row-label">Moderate alerts</div>
+            <div class="toggle-row-sub">In-dashboard only</div>
+          </div>
+          <label class="switch"><input type="checkbox" /><span class="switch-track"></span></label>
+        </div>
+
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-row-label">Daily summary email</div>
+            <div class="toggle-row-sub">Delivered 8:00 AM IST</div>
+          </div>
+          <label class="switch"><input type="checkbox" checked /><span class="switch-track"></span></label>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-2 mt-4">
+      <!-- Risk Thresholds -->
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Risk Score Thresholds</h2>
+          <span class="panel-meta">Model decision boundaries (%)</span>
+        </div>
+
+        <div class="range-row">
+          <div class="range-row-top"><span>Moderate risk trigger</span><strong id="thresholdModerate">${APP_DATA.thresholds.moderate}%</strong></div>
+          <input type="range" min="30" max="70" value="${APP_DATA.thresholds.moderate}" oninput="document.getElementById('thresholdModerate').textContent = this.value + '%'" />
+        </div>
+        <div class="range-row">
+          <div class="range-row-top"><span>High risk trigger</span><strong id="thresholdHigh">${APP_DATA.thresholds.high}%</strong></div>
+          <input type="range" min="60" max="90" value="${APP_DATA.thresholds.high}" oninput="document.getElementById('thresholdHigh').textContent = this.value + '%'" />
+        </div>
+        <div class="range-row">
+          <div class="range-row-top"><span>Critical risk trigger</span><strong id="thresholdCritical">${APP_DATA.thresholds.critical}%</strong></div>
+          <input type="range" min="80" max="99" value="${APP_DATA.thresholds.critical}" oninput="document.getElementById('thresholdCritical').textContent = this.value + '%'" />
+        </div>
+
+        <button class="btn btn--primary mt-4"><i data-lucide="save"></i> Update Thresholds</button>
+      </div>
+
+      <!-- System / Navigation -->
+      <div class="panel">
+        <div class="panel-header">
+          <h2>System</h2>
+          <span class="panel-meta">Session & navigation</span>
+        </div>
+
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-row-label">Model version</div>
+            <div class="toggle-row-sub">Currently deployed: ${APP_DATA.activeModel} (AUC ${APP_DATA.modelPerformance.find(m => m.model === APP_DATA.activeModel).auc})</div>
+          </div>
+          <span class="badge badge--success">Active</span>
+        </div>
+
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-row-label">Data sources</div>
+            <div class="toggle-row-sub">NASA GPM · SMAP · IMD · OpenStreetMap</div>
+          </div>
+          <span class="badge badge--success">Connected</span>
+        </div>
+
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-row-label">Language</div>
+            <div class="toggle-row-sub">Interface language</div>
+          </div>
+          <select style="padding:6px 10px; border:1px solid var(--color-border); border-radius:6px; font-size:13px;">
+            <option>English</option>
+            <option>മലയാളം (Malayalam)</option>
+            <option>தமிழ் (Tamil)</option>
+            <option>हिन्दी (Hindi)</option>
+          </select>
+        </div>
+
+        <div style="display:flex; gap:10px; margin-top:20px; flex-wrap:wrap;">
+          <a href="index.html" class="btn btn--outline"><i data-lucide="home"></i> Back to Home</a>
+          <button class="btn btn--critical" onclick="signOut()"><i data-lucide="log-out"></i> Sign Out</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel mt-4">
+      <div class="panel-header">
+        <h2>About SAFEGROUND AI</h2>
+        <span class="panel-meta">Version 1.0 · Hackathon build</span>
+      </div>
+      <p style="font-size:13.5px; color:var(--color-text-muted); line-height:1.6;">
+        SAFEGROUND AI is a landslide early-warning and emergency-response platform built for
+        Kerala State Disaster Management Authority. It fuses rainfall, soil moisture, and terrain
+        data through a machine-learning model to predict landslide risk 24 hours in advance, then
+        routes each alert through a human officer for approval before reaching citizens.
+      </p>
+      <p style="font-size:13.5px; color:var(--color-text-muted); line-height:1.6; margin-top:12px;">
+        Built for the 2026 hackathon. Data sources: NASA GPM (rainfall), NASA SMAP (soil moisture),
+        Indian Meteorological Department (forecasts), OpenStreetMap (terrain & shelters).
+      </p>
+    </div>
+  `;
+
+  renderLayout("settings", "Settings", content);
+});
+
+function signOut() {
+  sessionStorage.removeItem("safeground_token");
+  sessionStorage.removeItem("safeground_user");
+  window.location.href = "index.html";
+}
+</script>
+</body>
+</html>

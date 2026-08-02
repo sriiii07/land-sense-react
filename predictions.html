@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Predictions — SAFEGROUND AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="css/style.css" />
+<style>
+  #predMap { height: 380px; border-radius: 6px; border: 1px solid var(--color-border); }
+  .weather-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 16px; }
+  .weather-tile { background: #fff; border: 1px solid var(--color-border); border-radius: 6px; padding: 16px; text-align: center; }
+  .weather-tile-icon { font-size: 32px; margin-bottom: 8px; }
+  .weather-tile-val { font-size: 22px; font-weight: 700; color: var(--color-primary); }
+  .weather-tile-lbl { font-size: 12px; color: var(--color-text-muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; }
+  .loc-info { padding: 12px 16px; background: var(--color-surface); border-radius: 6px; margin-bottom: 16px; font-size: 13px; }
+  .loc-info strong { color: var(--color-primary); }
+  .pred-result { padding: 16px; border-radius: 6px; margin-top: 16px; font-size: 14px; }
+  .pred-result.critical { background: var(--color-critical-bg); border: 1px solid var(--color-critical); }
+  .pred-result.high     { background: var(--color-high-bg);     border: 1px solid var(--color-high); }
+  .pred-result.moderate { background: var(--color-warning-bg);  border: 1px solid var(--color-warning); }
+  .pred-result.low      { background: var(--color-success-bg);  border: 1px solid var(--color-success); }
+  .leaflet-tile-container img[src*="rainviewer"] {
+  transition: opacity 0.3s;
+}
+img.leaflet-tile-loaded[alt=""] { opacity: 1; }
+/* Hide broken RainViewer tiles gracefully */
+.leaflet-layer:has(img[src*="rainviewer"]) img[src*="rainviewer"]:not(.leaflet-tile-loaded) {
+  visibility: hidden;
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="js/data.js"></script>
+<script src="js/layout.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const content = `
+    <div class="loc-info" id="locInfo">📡 Requesting your location...</div>
+
+    <div class="weather-grid" id="weatherGrid">
+      <div class="weather-tile"><div class="weather-tile-icon">🌡️</div><div class="weather-tile-val" id="wTemp">—</div><div class="weather-tile-lbl">Temperature</div></div>
+      <div class="weather-tile"><div class="weather-tile-icon">🌧️</div><div class="weather-tile-val" id="wRain">—</div><div class="weather-tile-lbl">Rainfall (24h)</div></div>
+      <div class="weather-tile"><div class="weather-tile-icon">💧</div><div class="weather-tile-val" id="wHum">—</div><div class="weather-tile-lbl">Humidity</div></div>
+      <div class="weather-tile"><div class="weather-tile-icon">💨</div><div class="weather-tile-val" id="wWind">—</div><div class="weather-tile-lbl">Wind Speed</div></div>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Live Location Map</h2>
+          <span class="panel-meta">OpenStreetMap · your area</span>
+        </div>
+        <div id="predMap"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">
+          <h2>AI Prediction</h2>
+          <span class="panel-meta">Next 24 hours</span>
+        </div>
+        <div id="predResult">
+          <p class="text-muted" style="font-size:13px;">Waiting for weather data...</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel mt-4">
+      <div class="panel-header">
+        <h2>7-Day Rainfall Forecast</h2>
+        <span class="panel-meta">Open-Meteo API</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Date</th><th class="num">Max Temp</th><th class="num">Min Temp</th><th class="num">Rainfall</th><th>Risk Trend</th></tr>
+          </thead>
+          <tbody id="forecastTable">
+            <tr><td colspan="5" class="text-muted">Loading forecast...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+
+  renderLayout("predictions", "Live Weather & Landslide Predictions", content, initPredictions);
+});
+
+function initPredictions() {
+  // Try saved location from homepage first
+  const saved = localStorage.getItem("safeground_user_location");
+  if (saved) {
+    try {
+      const loc = JSON.parse(saved);
+      if (loc.lat && loc.lng) {
+        document.getElementById("locInfo").innerHTML =
+          `📍 <strong>Your location:</strong> ${loc.lat.toFixed(4)}°, ${loc.lng.toFixed(4)}° · Fetching live weather...`;
+        loadMap(loc.lat, loc.lng);
+        loadWeather(loc.lat, loc.lng);
+        return;
+      }
+    } catch {}
+  }
+
+  // Fallback: ask for permission
+  if (!navigator.geolocation) {
+    document.getElementById("locInfo").innerHTML = "❌ Your browser does not support geolocation.";
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      const { latitude, longitude } = pos.coords;
+      localStorage.setItem("safeground_user_location", JSON.stringify({ lat: latitude, lng: longitude, timestamp: Date.now() }));
+      document.getElementById("locInfo").innerHTML =
+        `📍 <strong>Your location:</strong> ${latitude.toFixed(4)}°, ${longitude.toFixed(4)}° · Fetching live weather...`;
+      loadMap(latitude, longitude);
+      loadWeather(latitude, longitude);
+    },
+    () => {
+      document.getElementById("locInfo").innerHTML =
+        "⚠️ Location access denied. Using default: Wayanad, Kerala.";
+      loadMap(11.685, 76.132);
+      loadWeather(11.685, 76.132);
+    }
+  );
+}
+
+function loadMap(lat, lng) {
+  const map = L.map("predMap", { maxZoom: 8 }).setView([lat, lng], 7);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "© OpenStreetMap"
+  }).addTo(map);
+  L.marker([lat, lng]).addTo(map).bindPopup("<strong>Your Location</strong>").openPopup();
+
+  L.circle([lat, lng], { radius: 5000, color: "#B3261E", fillColor: "#B3261E", fillOpacity: 0.15 }).addTo(map).bindPopup("High-risk zone (5km)");
+  L.circle([lat, lng], { radius: 15000, color: "#A66A00", fillColor: "#A66A00", fillOpacity: 0.08 }).addTo(map).bindPopup("Moderate-risk zone (15km)");
+
+  // ─── LIVE RAIN RADAR from RainViewer (free, no API key) ───
+  fetch("https://api.rainviewer.com/public/weather-maps.json")
+    .then(r => r.json())
+    .then(data => {
+      const frames = data.radar.past.concat(data.radar.nowcast || []);
+      let currentFrame = frames.length - 1;
+      let rainLayer = null;
+
+      function showFrame(i) {
+        if (rainLayer) map.removeLayer(rainLayer);
+        const frame = frames[i];
+        rainLayer = L.tileLayer(
+          `${data.host}${frame.path}/256/{z}/{x}/{y}/2/1_1.png`,
+          { opacity: 0.7, attribution: "RainViewer" }
+        ).addTo(map);
+      }
+      showFrame(currentFrame);
+
+      // Animate: cycle through last 12 frames every 800ms
+      let anim = currentFrame - 11;
+      if (anim < 0) anim = 0;
+      setInterval(() => {
+        anim++;
+        if (anim > currentFrame) anim = currentFrame - 11;
+        if (anim < 0) anim = 0;
+        showFrame(anim);
+      }, 900);
+
+      // Add legend
+      const legend = L.control({ position: "bottomright" });
+      legend.onAdd = function() {
+        const div = L.DomUtil.create("div");
+        div.innerHTML = `<div style="background:#fff;padding:8px 12px;border-radius:6px;font-size:11px;box-shadow:0 2px 6px rgba(0,0,0,0.15);">
+          <strong>🛰️ Live Rain Radar</strong><br>
+          <span style="color:#5B6472;">Updating every 10 min · RainViewer</span>
+        </div>`;
+        return div;
+      };
+      legend.addTo(map);
+    })
+    .catch(err => console.warn("Rain radar unavailable:", err));
+      // ─── IoT SOIL MOISTURE SENSORS ───
+  if (!document.getElementById("iot-sensor-styles")) {
+    const s = document.createElement("style");
+    s.id = "iot-sensor-styles";
+    s.textContent = `
+      .iot-sensor { position: relative; width: 20px; height: 20px; }
+      .iot-sensor-dot { position: absolute; inset: 4px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 6px rgba(0,0,0,0.4); }
+      .iot-sensor-pulse { position: absolute; inset: 0; border-radius: 50%; animation: iot-pulse 2s ease-out infinite; }
+      @keyframes iot-pulse { 0% { transform: scale(1); opacity: 0.7; } 100% { transform: scale(3); opacity: 0; } }
+    `;
+    document.head.appendChild(s);
+  }
+
+  APP_DATA.villages.forEach(v => {
+    let color = "#1E7B34", status = "Normal";
+    if (v.soilMoisture > 0.4) { color = "#B3261E"; status = "Critical"; }
+    else if (v.soilMoisture > 0.3) { color = "#A66A00"; status = "Elevated"; }
+
+    const sensor = L.divIcon({
+      className: "",
+      html: `<div class="iot-sensor">
+        <div class="iot-sensor-pulse" style="background:${color};"></div>
+        <div class="iot-sensor-dot" style="background:${color};"></div>
+      </div>`,
+      iconSize: [20, 20], iconAnchor: [10, 10]
+    });
+
+    L.marker([v.lat, v.lon], { icon: sensor }).addTo(map).bindPopup(`
+      <strong>📡 IoT Sensor · ${v.name}</strong><br>
+      <span style="color:${color};font-weight:700;">${status}</span><br>
+      Soil moisture: <strong>${(v.soilMoisture*100).toFixed(1)}%</strong><br>
+      Rainfall (24h): ${v.precip24} mm<br>
+      Slope: ${v.slope}°<br>
+      <em style="font-size:11px;color:#5B6472;">Live sensor · updates every 3s</em>
+    `);
+  });
+}
+
+async function loadWeather(lat, lng) {
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,relative_humidity_2m,precipitation,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&forecast_days=7&timezone=auto`;
+    const res = await fetch(url);
+    const data = await res.json();
+
+    const cur = data.current;
+    document.getElementById("wTemp").textContent = `${cur.temperature_2m}°C`;
+    document.getElementById("wRain").textContent = `${cur.precipitation} mm`;
+    document.getElementById("wHum").textContent = `${cur.relative_humidity_2m}%`;
+    document.getElementById("wWind").textContent = `${cur.wind_speed_10m} km/h`;
+
+    // Naive risk score: rainfall + humidity heuristic
+    const rain24 = data.daily.precipitation_sum[0] || 0;
+    const humidity = cur.relative_humidity_2m;
+    let riskScore = Math.min(100, (rain24 * 0.6) + (humidity * 0.4));
+    let level = "low";
+    if (riskScore >= 80) level = "critical";
+    else if (riskScore >= 60) level = "high";
+    else if (riskScore >= 40) level = "moderate";
+
+    const messages = {
+      critical: "🔴 Critical landslide risk detected. Immediate evacuation recommended.",
+      high:     "🟠 High risk. Monitor closely and prepare evacuation plans.",
+      moderate: "🟡 Moderate risk. Continue monitoring conditions.",
+      low:      "🟢 Low risk. Conditions are currently stable."
+    };
+
+    document.getElementById("predResult").innerHTML = `
+      <div class="pred-result ${level}">
+        <strong style="font-size:15px;">Risk Score: ${riskScore.toFixed(0)}%</strong>
+        <div style="margin-top:8px;">${messages[level]}</div>
+      </div>
+      <div class="mt-4" style="font-size:13px;">
+        <strong>Contributing factors:</strong>
+        <ul style="margin-top:8px; padding-left:20px; color:var(--color-text-muted);">
+          <li>Rainfall (24h): ${rain24} mm</li>
+          <li>Humidity: ${humidity}%</li>
+          <li>Wind speed: ${cur.wind_speed_10m} km/h</li>
+          <li>Weekly rainfall total: ${data.daily.precipitation_sum.reduce((a,b)=>a+b,0).toFixed(1)} mm</li>
+        </ul>
+      </div>
+    `;
+
+    // Fill 7-day forecast table
+    const rows = data.daily.time.map((day, i) => {
+      const rain = data.daily.precipitation_sum[i];
+      let trend = "🟢 Low";
+      if (rain > 100) trend = "🔴 Critical";
+      else if (rain > 60) trend = "🟠 High";
+      else if (rain > 30) trend = "🟡 Moderate";
+      return `<tr>
+        <td>${day}</td>
+        <td class="num">${data.daily.temperature_2m_max[i]}°C</td>
+        <td class="num">${data.daily.temperature_2m_min[i]}°C</td>
+        <td class="num">${rain} mm</td>
+        <td>${trend}</td>
+      </tr>`;
+    }).join("");
+    document.getElementById("forecastTable").innerHTML = rows;
+
+  } catch (err) {
+    document.getElementById("predResult").innerHTML =
+      `<div class="pred-result critical">Could not fetch weather data. ${err.message}</div>`;
+  }
+}
+</script>
+</body>
+</html>

@@ -11,8 +11,8 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "backend:dev": "cd backend && ../.venv/Scripts/python.exe -m uvicorn api:app --reload --port 8000",
-    "backend:start": "cd backend && ../.venv/Scripts/python.exe -m uvicorn api:app --port 8000",
+    "backend:dev": "cd backend && C:/Users/user/AppData/Local/Python/pythoncore-3.14-64/python.exe -m uvicorn api:app --reload --port 8001",
+    "backend:start": "cd backend && C:/Users/user/AppData/Local/Python/pythoncore-3.14-64/python.exe -m uvicorn api:app --port 8001",
     "start:frontend": "vite dev"
   },
   "dependencies": {
@@ -54,11 +54,13 @@
     "date-fns": "^4.1.0",
     "embla-carousel-react": "^8.6.0",
     "input-otp": "^1.4.2",
+    "leaflet": "^1.9.4",
     "lucide-react": "^0.575.0",
     "react": "^19.2.0",
     "react-day-picker": "^9.14.0",
     "react-dom": "^19.2.0",
     "react-hook-form": "^7.71.2",
+    "react-leaflet": "^5.0.0",
     "react-resizable-panels": "^4.6.5",
     "recharts": "^2.15.4",
     "sonner": "^2.0.7",
@@ -72,6 +74,7 @@
   "devDependencies": {
     "@eslint/js": "^9.32.0",
     "@lovable.dev/vite-tanstack-config": "^2.8.5",
+    "@types/leaflet": "^1.9.22",
     "@types/node": "^22.16.5",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",

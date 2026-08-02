@@ -3,12 +3,7 @@ backend/train_model.py
 ========================
 Trains the LandSense landslide risk classifier and records evaluation
 metrics. Falls back to a synthetic dataset when no real labeled data
-is available (e.g. for demos, hackathon judging, or first-time setup).
-
-Functions
----------
-generate_synthetic_landslide_dataset(samples=1000) -> pd.DataFrame
-train_and_evaluate_model(data_path=None)           -> dict
+is available.
 """
 
 from __future__ import annotations
@@ -42,27 +37,8 @@ RISK_LABELS = ["Low", "Medium", "High"]
 FEATURE_COLUMNS = ["rainfall_mm", "soil_moisture", "slope_angle"]
 
 
-def generate_synthetic_landslide_dataset(samples: int = 1000) -> pd.DataFrame:
-    """
-    Generate a synthetic, roughly class-balanced landslide risk dataset
-    to use as a fallback when no real labeled data is provided.
-
-    Columns
-    -------
-    rainfall_mm    : float in [0, 300]
-    soil_moisture  : float in [0, 100]
-    slope_angle    : float in [0, 60]
-    risk_label     : one of 'High', 'Medium', 'Low'
-
-    Parameters
-    ----------
-    samples : int
-        Number of rows to generate.
-
-    Returns
-    -------
-    pd.DataFrame
-    """
+def generate_synthetic_landslide_dataset(samples: int = 2000) -> pd.DataFrame:
+    """Generate a realistic synthetic landslide dataset."""
     rng = np.random.default_rng(seed=42)
 
     rainfall_mm = rng.uniform(0, 300, samples)
@@ -71,17 +47,12 @@ def generate_synthetic_landslide_dataset(samples: int = 1000) -> pd.DataFrame:
 
     risk_labels = []
     for rain, moisture, slope in zip(rainfall_mm, soil_moisture, slope_angle):
-        # A simple composite risk score drives the rule-based label so
-        # classes stay reasonably balanced and the relationship between
-        # features and label is learnable (not just noise).
         score = (rain / 300) * 0.5 + (moisture / 100) * 0.3 + (slope / 60) * 0.2
-        # Small random jitter avoids a perfectly deterministic boundary,
-        # which would make the classifier trivially overfit.
         score += rng.normal(0, 0.05)
 
-        if score > 0.62 or (rain > 180 or slope > 30):
+        if score > 0.62 or (rain > 180 and slope > 25) or (moisture > 85 and slope > 30):
             risk_labels.append("High")
-        elif score > 0.38:
+        elif score > 0.38 or rain > 120 or (moisture > 70 and slope > 20):
             risk_labels.append("Medium")
         else:
             risk_labels.append("Low")
@@ -105,7 +76,7 @@ def _ensure_database() -> None:
         )
     conn = sqlite3.connect(DB_PATH)
     try:
-        with open(SCHEMA_PATH, "r") as f:
+        with open(SCHEMA_PATH, "r", encoding="utf-8") as f:
             conn.executescript(f.read())
         conn.commit()
     finally:
@@ -113,39 +84,19 @@ def _ensure_database() -> None:
 
 
 def train_and_evaluate_model(data_path: Optional[str] = None) -> dict:
-    """
-    Train a RandomForestClassifier on landslide risk data, evaluate it,
-    persist the trained model to disk, and log the evaluation metrics
-    into the ``model_metrics`` table.
-
-    Parameters
-    ----------
-    data_path : str, optional
-        Path to a CSV file with columns matching FEATURE_COLUMNS plus
-        'risk_label'. If not provided or the file doesn't exist, a
-        synthetic dataset is generated instead.
-
-    Returns
-    -------
-    dict
-        The computed metrics: accuracy, precision, recall, f1_score,
-        auc_roc, and the path the model was saved to.
-    """
+    """Train a RandomForestClassifier and log metrics."""
     try:
-        # ---- 1. Load or synthesize data ----
         if data_path and os.path.exists(data_path):
             df = pd.read_csv(data_path)
             print(f"[train_model] Loaded real dataset from {data_path} ({len(df)} rows).")
         else:
-            df = generate_synthetic_landslide_dataset(samples=1000)
-            print(f"[train_model] No real dataset provided/found — using synthetic dataset "
-                  f"({len(df)} rows).")
+            df = generate_synthetic_landslide_dataset(samples=2000)
+            print(f"[train_model] Using synthetic dataset ({len(df)} rows).")
 
         missing_cols = [c for c in FEATURE_COLUMNS + ["risk_label"] if c not in df.columns]
         if missing_cols:
             raise ValueError(f"Dataset is missing required columns: {missing_cols}")
 
-        # ---- 2. Split features / labels ----
         X = df[FEATURE_COLUMNS].copy()
         y = df["risk_label"].copy()
 
@@ -153,16 +104,15 @@ def train_and_evaluate_model(data_path: Optional[str] = None) -> dict:
             X, y, test_size=0.2, random_state=42, stratify=y
         )
 
-        # ---- 3. Train ----
         model = RandomForestClassifier(
-            n_estimators=100,
-            max_depth=None,
+            n_estimators=200,
+            max_depth=15,
             class_weight="balanced",
             random_state=42,
+            n_jobs=-1,
         )
         model.fit(X_train, y_train)
 
-        # ---- 4. Predict & evaluate ----
         y_pred = model.predict(X_test)
         y_proba = model.predict_proba(X_test)
 
@@ -171,9 +121,6 @@ def train_and_evaluate_model(data_path: Optional[str] = None) -> dict:
         recall = recall_score(y_test, y_pred, average="macro", zero_division=0)
         f1 = f1_score(y_test, y_pred, average="macro", zero_division=0)
 
-        # Multiclass AUC-ROC: one-vs-rest, macro-averaged. Falls back to
-        # binary AUC-ROC on the 'High' class if only two classes appear
-        # in this particular split.
         classes_present = sorted(y_test.unique().tolist())
         if len(classes_present) > 2:
             y_test_bin = label_binarize(y_test, classes=model.classes_.tolist())
@@ -197,11 +144,9 @@ def train_and_evaluate_model(data_path: Optional[str] = None) -> dict:
         for k, v in metrics.items():
             print(f"  {k}: {v:.4f}")
 
-        # ---- 5. Save model ----
         joblib.dump(model, MODEL_PATH)
         print(f"[train_model] Model saved to {MODEL_PATH}")
 
-        # ---- 6. Persist metrics to model_metrics table ----
         try:
             _ensure_database()
             conn = sqlite3.connect(DB_PATH)

@@ -1,12 +1,661 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>BHOOSAKTHI — Landslide Early Warning & Response</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SAFEGROUND AI &mdash; Landslide Early Warning &amp; Emergency Response</title>
+<meta name="description" content="SAFEGROUND AI predicts landslide risk 24 hours in advance using rainfall, soil, and terrain data, and coordinates evacuation between disaster authorities and citizens." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<header class="public-nav" id="top">
+  <div class="brand"><i data-lucide="mountain-snow"></i> SAFEGROUND <span class="brand-accent">AI</span></div>
+  <nav class="public-nav-links">
+    <a href="#how-it-works" class="nav-link-ghost">How it works</a>
+    <a href="#features" class="nav-link-ghost">Features</a>
+    <a href="login.html?role=authority" class="btn btn--outline btn--sm">Authority Login</a>
+    <a href="login.html?role=citizen" class="btn btn--primary btn--sm">Citizen Access</a>
+  </nav>
+</header>
+
+<!-- ============================= HERO ============================= -->
+<section class="hero-v2">
+  <div class="hero-v2-inner reveal">
+    <span class="hero-eyebrow"><i data-lucide="radio" style="width:13px;height:13px;"></i> Live monitoring &middot; Kerala Disaster Management Authority</span>
+    <h1>Know a landslide is coming, <span class="text-accent">24 hours</span> before it happens.</h1>
+    <p class="lede">
+      SAFEGROUND AI fuses rainfall, soil moisture, and terrain data through a trained machine-learning
+      model to score landslide risk for every village &mdash; then routes each alert through a human
+      disaster officer before it ever reaches a citizen's phone.
+    </p>
+<div class="hero-actions">
+  <a href="login.html?role=authority" class="btn btn--primary btn--lg">
+    <i data-lucide="shield"></i> I'm a Disaster Authority
+  </a>
+  <a href="login.html?role=citizen" class="btn btn--secondary btn--lg">
+    <i data-lucide="user"></i> I'm a Citizen
+  </a>
+  <button class="btn btn--critical btn--lg" onclick="startDrill()" id="drillBtn">
+    <i data-lucide="play-circle"></i> Run Emergency Drill
+  </button>
+</div>
+    <button class="scroll-cue" id="scrollCue" aria-label="Scroll to learn more">
+      <i data-lucide="chevron-down"></i>
+    </button>
+  </div>
+
+  <div class="hero-visual reveal" aria-hidden="true">
+    <div class="risk-preview-card">
+      <div class="risk-preview-head">
+        <span>Wayanad District &mdash; Live Risk</span>
+        <span class="badge badge--critical">Critical</span>
+      </div>
+      <div class="risk-preview-village">
+        <strong>Maramalakari</strong>
+        <span class="text-muted">Population 1,264</span>
+      </div>
+      <div class="risk-preview-bar-track">
+        <div class="risk-preview-bar-fill" style="width:94%;"></div>
+      </div>
+      <div class="risk-preview-foot">
+        <span>Risk score</span>
+        <strong>94%</strong>
+      </div>
+      <ul class="risk-preview-list">
+        <li><i data-lucide="cloud-rain"></i> 72h rainfall: 240mm</li>
+        <li><i data-lucide="droplets"></i> Soil moisture: 46%</li>
+        <li><i data-lucide="triangle-alert"></i> Slope: 31&deg;</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ========================= STAT STRIP ========================= -->
+<section class="stat-strip reveal">
+  <div class="stat-strip-item">
+    <strong>24 hrs</strong>
+    <span>advance warning window</span>
+  </div>
+  <div class="stat-strip-item">
+    <strong>7+</strong>
+    <span>live data sources fused</span>
+  </div>
+  <div class="stat-strip-item">
+    <strong>100%</strong>
+    <span>alerts reviewed by a human officer</span>
+  </div>
+  <div class="stat-strip-item">
+    <strong>91%</strong>
+    <span>validated model ROC-AUC</span>
+  </div>
+</section>
+
+<!-- ====================== WHAT IS SAFEGROUND ====================== -->
+<section class="section reveal">
+  <div class="section-heading">
+    <h2>What is SAFEGROUND AI?</h2>
+    <p>
+      A prediction-to-response platform built for Kerala's landslide-prone districts. It doesn't just
+      forecast risk &mdash; it closes the loop from satellite data to a citizen standing at a shelter door.
+    </p>
+  </div>
+  <div class="explainer-grid">
+    <div class="explainer-step">
+      <span class="explainer-num">01</span>
+      <h3>Sense</h3>
+      <p>Rainfall, soil moisture, slope, and land cover are pulled continuously from NASA GPM/SMAP, IMD forecasts, and terrain models for every village.</p>
+    </div>
+    <div class="explainer-step">
+      <span class="explainer-num">02</span>
+      <h3>Predict</h3>
+      <p>A trained XGBoost model scores landslide probability hourly, mapped to Low / Moderate / High / Critical risk levels per village.</p>
+    </div>
+    <div class="explainer-step">
+      <span class="explainer-num">03</span>
+      <h3>Verify</h3>
+      <p>A disaster officer reviews the AI's explanation and live conditions on the authority dashboard, then approves or rejects the alert.</p>
+    </div>
+    <div class="explainer-step">
+      <span class="explainer-num">04</span>
+      <h3>Respond</h3>
+      <p>Approved alerts reach citizens instantly with the nearest shelter and route. Rescue teams are prioritized by risk &times; population exposure.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================= HOW IT WORKS TIMELINE ============================= -->
+<section class="section section--tinted reveal" id="how-it-works">
+  <div class="section-heading">
+    <h2>How it works</h2>
+    <p>From raw sensor data to a citizen at a safe shelter &mdash; every step, accounted for.</p>
+  </div>
+  <div class="timeline">
+    <div class="timeline-item">
+      <div class="timeline-dot"><i data-lucide="satellite-dish"></i></div>
+      <div class="timeline-content">
+        <h4>Data ingestion</h4>
+        <p>Hourly rainfall, soil moisture, and forecast data are ingested and cleaned automatically.</p>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot"><i data-lucide="brain-circuit"></i></div>
+      <div class="timeline-content">
+        <h4>Risk scoring</h4>
+        <p>The model computes a landslide probability per village and explains its top contributing factors.</p>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot"><i data-lucide="clipboard-check"></i></div>
+      <div class="timeline-content">
+        <h4>Officer review</h4>
+        <p>High and Critical risk villages surface on the authority dashboard for a human decision &mdash; approve or dismiss.</p>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot"><i data-lucide="bell-ring"></i></div>
+      <div class="timeline-content">
+        <h4>Citizen alert</h4>
+        <p>Approved alerts push instantly to registered citizens with evacuation instructions and the nearest shelter.</p>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot"><i data-lucide="heart-pulse"></i></div>
+      <div class="timeline-content">
+        <h4>Rescue prioritization</h4>
+        <p>Citizens report Safe or Need Help; rescue teams are dispatched to the highest-exposure villages first.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================= FEATURES ============================= -->
+<section class="section reveal" id="features">
+  <div class="section-heading">
+    <h2>Built for real disaster response</h2>
+    <p>Not a demo dashboard &mdash; a decision-support system a District Disaster Management Authority could deploy.</p>
+  </div>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <i data-lucide="cpu" class="feature-icon"></i>
+      <h3>AI Risk Prediction</h3>
+      <p>XGBoost model trained on rainfall, soil moisture, slope, land cover, and historical landslide records, evaluated to 91% ROC-AUC.</p>
+    </div>
+    <div class="feature-card">
+      <i data-lucide="clipboard-check" class="feature-icon"></i>
+      <h3>Human-in-the-Loop Approval</h3>
+      <p>No alert reaches a citizen without officer review. Every approval or rejection is logged for accountability.</p>
+    </div>
+    <div class="feature-card">
+      <i data-lucide="map" class="feature-icon"></i>
+      <h3>Live Risk Map &amp; Explanations</h3>
+      <p>Color-coded village risk map with SHAP-based explanations, so officers see exactly why a village was flagged.</p>
+    </div>
+    <div class="feature-card">
+      <i data-lucide="home" class="feature-icon"></i>
+      <h3>Shelter &amp; Capacity Tracking</h3>
+      <p>Real-time shelter occupancy so evacuation routing never sends citizens to a shelter that's already full.</p>
+    </div>
+    <div class="feature-card">
+      <i data-lucide="users" class="feature-icon"></i>
+      <h3>Citizen Status Monitoring</h3>
+      <p>Registered citizens report Safe / Need Help, giving rescue teams a live, village-level picture of who needs help.</p>
+    </div>
+    <div class="feature-card">
+      <i data-lucide="wifi-off" class="feature-icon"></i>
+      <h3>Offline-Ready Citizen App</h3>
+      <p>Shelter maps and instructions cache on-device, so evacuation guidance still works when networks fail.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================= ACCESS ============================= -->
+<section class="section section--tinted reveal" id="citizen">
+  <div class="section-heading">
+    <h2>Access the platform</h2>
+    <p>Choose the interface that matches your role.</p>
+  </div>
+  <div class="access-grid">
+    <div class="access-card">
+      <i data-lucide="shield" class="access-icon"></i>
+      <h3>Disaster Management Authority</h3>
+      <p>Review AI predictions, inspect environmental data and explanations, approve or reject alerts, and
+      prioritize rescue dispatch across affected villages.</p>
+      <a href="login.html?role=authority" class="btn btn--primary btn--block">Authority Login</a>
+    </div>
+    <div class="access-card">
+      <i data-lucide="smartphone" class="access-icon"></i>
+      <h3>Citizen</h3>
+      <p>Register with your village to receive approved alerts, see the nearest shelter and evacuation route,
+      and report your status as Safe or Need Help &mdash; even offline.</p>
+      <a href="login.html?role=citizen" class="btn btn--secondary btn--block">Citizen Login / Register</a>
+    </div>
+  </div>
+</section>
+
+<footer class="public-footer">
+  <span>&copy; 2026 SAFEGROUND AI &mdash; built for Kerala State Disaster Management Authority</span>
+  <span>Hackathon demonstration build</span>
+</footer>
+
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<script>
+// ═════════════════════════════════════════════════════════════
+// EMERGENCY DRILL MODE
+// Simulates the entire product flow in ~60 seconds.
+// Judges click "Run Emergency Drill" and watch the whole system
+// react — prediction → officer approval → citizen alert → response.
+// ═════════════════════════════════════════════════════════════
+
+function startDrill() {
+  const overlay = document.createElement("div");
+  overlay.id = "drillOverlay";
+  overlay.innerHTML = `
+    <div class="drill-modal">
+      <button class="drill-close" onclick="closeDrill()">×</button>
+      <div class="drill-header">
+        <div class="drill-badge">🎮 EMERGENCY SIMULATION</div>
+        <h2 id="drillTitle">Initializing drill...</h2>
+        <p id="drillSub">Simulating a real landslide event in Wayanad, Kerala.</p>
+      </div>
+
+      <div class="drill-timeline">
+        <div class="drill-step" id="dstep-1"><div class="drill-step-icon">🛰️</div><div class="drill-step-text">Satellite data ingestion</div></div>
+        <div class="drill-step" id="dstep-2"><div class="drill-step-icon">🧠</div><div class="drill-step-text">AI model prediction</div></div>
+        <div class="drill-step" id="dstep-3"><div class="drill-step-icon">👮</div><div class="drill-step-text">Officer review & approval</div></div>
+        <div class="drill-step" id="dstep-4"><div class="drill-step-icon">📱</div><div class="drill-step-text">Citizen alerts dispatched</div></div>
+        <div class="drill-step" id="dstep-5"><div class="drill-step-icon">🏠</div><div class="drill-step-text">Shelter routing activated</div></div>
+        <div class="drill-step" id="dstep-6"><div class="drill-step-icon">✅</div><div class="drill-step-text">Rescue teams coordinated</div></div>
+      </div>
+
+      <div class="drill-log" id="drillLog"></div>
+
+      <div class="drill-stats" id="drillStats" style="display:none;">
+        <div class="drill-stat"><div class="drill-stat-val" id="statCitizens">0</div><div class="drill-stat-lbl">Citizens Alerted</div></div>
+        <div class="drill-stat"><div class="drill-stat-val" id="statTime">0.0s</div><div class="drill-stat-lbl">Total Time</div></div>
+        <div class="drill-stat"><div class="drill-stat-val" id="statShelters">0</div><div class="drill-stat-lbl">Shelters Activated</div></div>
+        <div class="drill-stat"><div class="drill-stat-val" id="statLives">0</div><div class="drill-stat-lbl">Lives at Risk</div></div>
+      </div>
+
+      <div class="drill-actions" id="drillActions" style="display:none;">
+        <a href="dashboard.html" class="btn btn--primary">View Authority Dashboard</a>
+        <a href="citizen.html" class="btn btn--secondary">View Citizen Response</a>
+        <button class="btn btn--outline" onclick="closeDrill()">Close</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  // Inject styles
+  if (!document.getElementById("drill-styles")) {
+    const st = document.createElement("style");
+    st.id = "drill-styles";
+    st.textContent = `
+      #drillOverlay {
+        position: fixed; inset: 0; z-index: 100000;
+        background: rgba(11, 36, 80, 0.92);
+        backdrop-filter: blur(6px);
+        display: flex; align-items: center; justify-content: center;
+        animation: drillFadeIn 0.4s ease;
+        padding: 20px;
+        overflow-y: auto;
+      }
+      @keyframes drillFadeIn { from { opacity: 0; } to { opacity: 1; } }
+      .drill-modal {
+        background: #fff; border-radius: 12px; max-width: 780px; width: 100%;
+        padding: 32px; box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+        max-height: 92vh; overflow-y: auto; position: relative;
+        font-family: 'Inter', sans-serif;
+      }
+      .drill-close {
+        position: absolute; top: 12px; right: 16px;
+        background: none; border: none; font-size: 28px;
+        cursor: pointer; color: #5B6472; line-height: 1;
+      }
+      .drill-close:hover { color: #B3261E; }
+      .drill-header { text-align: center; margin-bottom: 24px; }
+      .drill-badge {
+        display: inline-block; background: #B3261E; color: #fff;
+        padding: 4px 14px; border-radius: 999px; font-size: 11px;
+        font-weight: 700; letter-spacing: 0.1em; margin-bottom: 12px;
+        animation: drillPulse 1.5s infinite;
+      }
+      @keyframes drillPulse { 50% { opacity: 0.7; } }
+      .drill-header h2 { font-size: 24px; margin-bottom: 8px; color: #10336B; }
+      .drill-header p { color: #5B6472; font-size: 14px; }
+
+      .drill-timeline {
+        display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px;
+        margin-bottom: 24px; padding: 20px 0;
+        border-top: 1px solid #DDE1E6; border-bottom: 1px solid #DDE1E6;
+      }
+      .drill-step {
+        text-align: center; opacity: 0.3; transition: all 0.4s ease;
+      }
+      .drill-step.active {
+        opacity: 1; transform: scale(1.08);
+      }
+      .drill-step.done { opacity: 1; }
+      .drill-step-icon {
+        width: 44px; height: 44px; margin: 0 auto 8px;
+        background: #F4F5F7; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 22px; border: 2px solid #DDE1E6;
+        transition: all 0.4s ease;
+      }
+      .drill-step.active .drill-step-icon {
+        background: #10336B; color: #fff; border-color: #10336B;
+        animation: drillGlow 1s infinite;
+      }
+      .drill-step.done .drill-step-icon {
+        background: #1E7B34; color: #fff; border-color: #1E7B34;
+      }
+      @keyframes drillGlow { 50% { box-shadow: 0 0 12px rgba(16,51,107,0.6); } }
+      .drill-step-text { font-size: 11px; color: #1B1F27; font-weight: 600; line-height: 1.3; }
+
+      .drill-log {
+        background: #0B2450; color: #7AE582; border-radius: 8px;
+        padding: 16px; font-family: 'Consolas', 'Courier New', monospace;
+        font-size: 12.5px; max-height: 220px; overflow-y: auto;
+        margin-bottom: 20px; min-height: 140px;
+      }
+      .drill-log-line { margin-bottom: 4px; opacity: 0; animation: drillLogIn 0.3s forwards; }
+      @keyframes drillLogIn { to { opacity: 1; } }
+      .drill-log-line .ts { color: #5B9BE0; margin-right: 8px; }
+      .drill-log-line .lvl-info { color: #7AE582; }
+      .drill-log-line .lvl-warn { color: #FFC947; }
+      .drill-log-line .lvl-crit { color: #FF6B5C; font-weight: 700; }
+      .drill-log-line .lvl-ok { color: #7AE582; font-weight: 700; }
+
+      .drill-stats {
+        display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+        margin-bottom: 20px;
+      }
+      .drill-stat {
+        background: #F4F5F7; padding: 16px; border-radius: 8px;
+        text-align: center; border: 1px solid #DDE1E6;
+      }
+      .drill-stat-val { font-size: 28px; font-weight: 800; color: #10336B; }
+      .drill-stat-lbl {
+        font-size: 10px; text-transform: uppercase;
+        letter-spacing: 0.05em; color: #5B6472; font-weight: 700; margin-top: 4px;
+      }
+
+      .drill-actions {
+        display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+      }
+
+      @media (max-width: 640px) {
+        .drill-timeline { grid-template-columns: repeat(3, 1fr); }
+        .drill-stats { grid-template-columns: repeat(2, 1fr); }
+      }
+    `;
+    document.head.appendChild(st);
+  }
+
+  runDrillSequence();
+}
+
+function closeDrill() {
+  const o = document.getElementById("drillOverlay");
+  if (o) o.remove();
+}
+
+function drillLog(msg, level = "info") {
+  const log = document.getElementById("drillLog");
+  if (!log) return;
+  const now = new Date();
+  const ts = now.toTimeString().split(" ")[0] + "." + String(now.getMilliseconds()).padStart(3, "0").slice(0, 3);
+  const line = document.createElement("div");
+  line.className = "drill-log-line";
+  line.innerHTML = `<span class="ts">[${ts}]</span><span class="lvl-${level}">${msg}</span>`;
+  log.appendChild(line);
+  log.scrollTop = log.scrollHeight;
+}
+
+function drillActivate(step) {
+  document.querySelectorAll(".drill-step").forEach(s => s.classList.remove("active"));
+  const el = document.getElementById(`dstep-${step}`);
+  if (el) el.classList.add("active");
+  // Mark previous as done
+  for (let i = 1; i < step; i++) {
+    document.getElementById(`dstep-${i}`)?.classList.add("done");
+    document.getElementById(`dstep-${i}`)?.classList.remove("active");
+  }
+}
+
+function drillSetTitle(title, sub) {
+  document.getElementById("drillTitle").textContent = title;
+  document.getElementById("drillSub").textContent = sub;
+}
+
+async function runDrillSequence() {
+  const startTime = Date.now();
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+  // ─── STEP 1: Data ingestion
+  drillActivate(1);
+  drillSetTitle("🛰️ Ingesting satellite data...", "Fetching NASA GPM rainfall + SMAP soil moisture for Wayanad district.");
+  drillLog("Connecting to NASA GPM API...", "info");
+  await sleep(600);
+  drillLog("✓ Rainfall data received: 240mm in last 72h", "ok");
+  await sleep(400);
+  drillLog("Connecting to SMAP soil moisture API...", "info");
+  await sleep(500);
+  drillLog("✓ Soil moisture: 46% volumetric (SATURATED)", "warn");
+  await sleep(400);
+  drillLog("Loading terrain model for Wayanad...", "info");
+  await sleep(400);
+  drillLog("✓ Slope analysis complete: max 31° in Maramalakari", "warn");
+  await sleep(500);
+
+  // ─── STEP 2: AI prediction
+  drillActivate(2);
+  drillSetTitle("🧠 AI model computing risk...", "XGBoost classifier scoring 12 villages across 7 features.");
+  drillLog("Loading model.joblib (XGBoost v1.2)...", "info");
+  await sleep(400);
+  drillLog("Computing risk scores for 12 villages...", "info");
+  await sleep(700);
+  drillLog("⚠ CRITICAL RISK detected: Maramalakari (94%)", "crit");
+  await sleep(300);
+  drillLog("⚠ HIGH RISK: Elappully (87%), Kavalangad (83%)", "warn");
+  await sleep(300);
+  drillLog("Generating SHAP explanations...", "info");
+  await sleep(500);
+  drillLog("✓ Top factor: 72h rainfall (contribution: 0.31)", "ok");
+  await sleep(400);
+
+  // ─── STEP 3: Officer approval
+  drillActivate(3);
+  drillSetTitle("👮 Awaiting officer approval...", "District Disaster Management Officer reviewing AI recommendation.");
+  drillLog("Alert queued for Officer Anil Kumar (Wayanad DDMA)", "info");
+  await sleep(500);
+  drillLog("Officer reviewing environmental data...", "info");
+  await sleep(800);
+  drillLog("Officer reviewing SHAP explanation...", "info");
+  await sleep(700);
+  drillLog("✓ ALERT APPROVED by Officer Anil Kumar", "ok");
+  await sleep(400);
+  drillLog("Decision logged to audit trail (immutable)", "info");
+  await sleep(300);
+
+  // ─── STEP 4: Citizen alerts
+  drillActivate(4);
+  drillSetTitle("📱 Dispatching citizen alerts...", "SMS + push notifications to 1,264 registered residents.");
+  drillLog("Fetching registered citizens in Maramalakari...", "info");
+  await sleep(400);
+  drillLog("✓ 1,264 citizens found in affected zone", "ok");
+  await sleep(400);
+  drillLog("Dispatching SMS via Twilio gateway...", "info");
+  for (let i = 0; i < 4; i++) {
+    await sleep(180);
+    drillLog(`  → SMS batch ${i+1}/4 sent (316 recipients)`, "info");
+  }
+  drillLog("✓ 1,264 SMS delivered in 2.1s", "ok");
+  await sleep(300);
+  drillLog("Push notifications sent via FCM", "info");
+  await sleep(300);
+  drillLog("Voice call activated for elderly registrants (73 calls)", "info");
+  await sleep(400);
+
+  // ─── STEP 5: Shelter routing
+  drillActivate(5);
+  drillSetTitle("🏠 Activating shelter network...", "Routing citizens to nearest available shelters with capacity.");
+  drillLog("Scanning 5 registered shelters in Wayanad district", "info");
+  await sleep(400);
+  drillLog("✓ Govt. LP School, Meppadi — 70 spots available", "ok");
+  await sleep(200);
+  drillLog("✓ Community Hall, Kalpetta — 140 spots available", "ok");
+  await sleep(200);
+  drillLog("Calculating optimal routing (Haversine)...", "info");
+  await sleep(500);
+  drillLog("✓ 852 citizens → Meppadi (avg 2.3 km)", "ok");
+  await sleep(200);
+  drillLog("✓ 412 citizens → Kalpetta (avg 4.8 km)", "ok");
+  await sleep(400);
+
+  // ─── STEP 6: Rescue coordination
+  drillActivate(6);
+  drillSetTitle("✅ Emergency response coordinated", "Rescue teams dispatched. Real-time citizen tracking active.");
+  drillLog("NDRF team dispatched from Kalpetta base", "info");
+  await sleep(400);
+  drillLog("Local police notified via Kerala Police API", "info");
+  await sleep(400);
+  drillLog("Ambulance rotation configured (108 service)", "info");
+  await sleep(400);
+  drillLog("Citizen status monitoring ACTIVE", "ok");
+  await sleep(300);
+  drillLog("═══════════════════════════════════════", "ok");
+  drillLog("DRILL COMPLETE — SYSTEM READY", "ok");
+  drillLog("═══════════════════════════════════════", "ok");
+
+  // Mark last step as done
+  document.getElementById(`dstep-6`).classList.add("done");
+  document.getElementById(`dstep-6`).classList.remove("active");
+
+  // Reveal stats
+  const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
+  drillSetTitle("🎉 Drill Complete", `End-to-end response executed in ${totalTime} seconds.`);
+
+  document.getElementById("drillStats").style.display = "grid";
+  document.getElementById("drillActions").style.display = "flex";
+
+  // Animate counters
+  animateCounter("statCitizens", 1264, 1500);
+  animateCounter("statShelters", 5, 800);
+  animateCounter("statLives", 1264, 1500);
+  document.getElementById("statTime").textContent = totalTime + "s";
+}
+
+function animateCounter(id, target, duration) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const start = Date.now();
+  const step = () => {
+    const elapsed = Date.now() - start;
+    const progress = Math.min(elapsed / duration, 1);
+    const val = Math.floor(target * progress);
+    el.textContent = val.toLocaleString();
+    if (progress < 1) requestAnimationFrame(step);
+    else el.textContent = target.toLocaleString();
+  };
+  step();
+}
+</script>
+<script src="js/landing.js"></script>
+
+<script>
+// ─── Global location capture ─────────────────────────────────
+// Runs once when a user first visits. Stores in localStorage so
+// every other page (predictions, shelters, citizen, citizens)
+// can use the accurate lat/lng instead of asking again.
+(function initGlobalLocation() {
+  const KEY = "safeground_user_location";
+
+  // Already have location? Skip.
+  const existing = localStorage.getItem(KEY);
+  if (existing) {
+    console.log("📍 Location already saved:", JSON.parse(existing));
+    return;
+  }
+
+  // Wait for DOM
+  window.addEventListener("DOMContentLoaded", () => {
+    // Show a friendly banner asking for permission
+    const banner = document.createElement("div");
+    banner.id = "locationBanner";
+    banner.style.cssText = `
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      background: #10336B; color: #fff; padding: 16px 24px;
+      border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+      z-index: 9999; display: flex; align-items: center; gap: 16px;
+      font-family: 'Inter', sans-serif; font-size: 14px;
+      max-width: 92%; flex-wrap: wrap; justify-content: center;
+      animation: slideUp 0.4s ease;
+    `;
+    banner.innerHTML = `
+      <div>
+        <strong style="display:block; margin-bottom:4px;">📍 Enable location for personalized alerts</strong>
+        <span style="font-size:13px; opacity:0.9;">SAFEGROUND uses your location to show accurate weather, nearest shelters, and landslide risk in your exact area.</span>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <button id="locAllow" style="padding:10px 18px; background:#fff; color:#10336B; border:none; border-radius:6px; font-weight:700; cursor:pointer; font-size:13px;">Allow Location</button>
+        <button id="locDeny" style="padding:10px 14px; background:transparent; color:#fff; border:1px solid rgba(255,255,255,0.4); border-radius:6px; cursor:pointer; font-size:13px;">Not Now</button>
+      </div>
+    `;
+    document.body.appendChild(banner);
+
+    // Add slide-up animation
+    const style = document.createElement("style");
+    style.textContent = `@keyframes slideUp { from { transform: translate(-50%, 100px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }`;
+    document.head.appendChild(style);
+
+    document.getElementById("locAllow").addEventListener("click", () => {
+      if (!navigator.geolocation) {
+        banner.remove();
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const loc = {
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+            accuracy: pos.coords.accuracy,
+            timestamp: Date.now()
+          };
+          localStorage.setItem(KEY, JSON.stringify(loc));
+          banner.innerHTML = `<strong>✅ Location saved — you'll get accurate alerts for your area.</strong>`;
+          banner.style.background = "#1E7B34";
+          setTimeout(() => banner.remove(), 2500);
+        },
+        (err) => {
+          banner.innerHTML = `<strong>⚠️ Location denied. You can enable it later in your browser settings.</strong>`;
+          banner.style.background = "#A66A00";
+          localStorage.setItem(KEY, JSON.stringify({ denied: true }));
+          setTimeout(() => banner.remove(), 3000);
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+      );
+    });
+
+    document.getElementById("locDeny").addEventListener("click", () => {
+      localStorage.setItem(KEY, JSON.stringify({ denied: true }));
+      banner.remove();
+    });
+  });
+})();
+
+// ─── Helper for other pages to use ───────────────────────────
+window.SAFEGROUND_getLocation = function() {
+  const saved = localStorage.getItem("safeground_user_location");
+  if (!saved) return null;
+  try {
+    const parsed = JSON.parse(saved);
+    return parsed.denied ? null : parsed;
+  } catch { return null; }
+};
+</script>
+</body>
 </html>

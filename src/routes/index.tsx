@@ -1,200 +1,138 @@
-/** Public landing page introducing the platform to authorities and citizens. */
+﻿// src/routes/index.tsx  — Public landing page
 import { createFileRoute, Link } from "@tanstack/react-router";
-import {
-  MountainSnow,
-  Satellite,
-  BrainCircuit,
-  Siren,
-  ArrowRight,
-  Smartphone,
-} from "lucide-react";
+import { useI18n } from "@/lib/i18n";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [
-      { title: "BHOOSAKTHI — AI Landslide Early Warning & Response" },
-      {
-        name: "description",
-        content:
-          "24-hour advance landslide prediction and emergency response platform for district disaster management authorities.",
-      },
-      { property: "og:title", content: "BHOOSAKTHI — AI Landslide Early Warning & Response" },
-      {
-        property: "og:description",
-        content:
-          "24-hour advance landslide prediction and emergency response platform for district disaster management authorities.",
-      },
-    ],
-  }),
   component: LandingPage,
 });
 
-const features = [
-  {
-    icon: Satellite,
-    title: "Multi-source data ingestion",
-    body: "Rainfall (NASA GPM IMERG), soil moisture (SMAP), terrain (SRTM DEM), land cover and IMD forecasts are fused into a daily feature table for every village.",
-  },
-  {
-    icon: BrainCircuit,
-    title: "Village-level risk prediction",
-    body: "A gradient-boosted model trained on the Kerala 2018 landslide inventory scores each village 24 hours in advance, with SHAP-based explanation of every prediction.",
-  },
-  {
-    icon: Siren,
-    title: "Officer-approved response",
-    body: "No alert reaches the public without human authorisation. Approved alerts push evacuation routes, shelter capacity and live citizen safety status.",
-  },
-];
-
 function LandingPage() {
-  return (
-    <div className="min-h-screen bg-background">
-      {/* Government identification bar */}
-      <div className="border-b border-border bg-primary px-4 py-1.5 text-center text-xs text-primary-foreground">
-        Prototype system · Kerala State Disaster Management Authority · For demonstration purposes
-      </div>
+  const { t } = useI18n();
 
-      <header className="border-b border-border">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4">
-          <div className="flex items-center gap-2.5">
-            <MountainSnow aria-hidden className="size-6 text-primary" />
-            <div>
-              <p className="text-sm font-semibold text-foreground">BHOOSAKTHI</p>
-              <p className="text-xs text-muted-foreground">
-                Landslide Early Warning &amp; Response Platform
-              </p>
-            </div>
+  return (
+    <div className="min-h-screen bg-background flex flex-col">
+
+      {/* ── TOP NAV ─────────────────────────────────────────────── */}
+      <nav className="border-b border-border px-4 py-3 bg-background/95 backdrop-blur sticky top-0 z-50">
+        <div className="max-w-5xl mx-auto flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <span className="text-2xl">⛰️</span>
+            <span className="font-black text-xl tracking-tight">{t("app_name")}</span>
           </div>
+          <div className="flex items-center gap-3">
+            <LanguageSwitcher />
+            <Link
+              to="/login"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors hidden sm:block"
+            >
+              {t("authority_login")}
+            </Link>
+          </div>
+        </div>
+      </nav>
+
+      {/* ── HERO ────────────────────────────────────────────────── */}
+      <main className="flex-1 flex flex-col items-center justify-center px-4 py-12 space-y-8 max-w-3xl mx-auto w-full text-center">
+
+        <div className="space-y-4">
+          <div className="text-7xl">🛰️</div>
+          <h1 className="text-5xl md:text-6xl font-black tracking-tight leading-tight">
+            {t("app_name")}
+          </h1>
+          <p className="text-xl text-muted-foreground max-w-lg mx-auto leading-relaxed">
+            {t("app_tagline")}
+          </p>
+          <div className="flex items-center justify-center gap-2 flex-wrap">
+            <span className="bg-green-100 text-green-800 text-xs font-bold px-3 py-1 rounded-full border border-green-200">
+              ✅ {t("free_service")}
+            </span>
+            <span className="bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full border border-blue-200">
+              🤖 {t("powered_by_ai")}
+            </span>
+            <span className="bg-orange-100 text-orange-800 text-xs font-bold px-3 py-1 rounded-full border border-orange-200">
+              ⚡ 24hr Advance Warning
+            </span>
+          </div>
+        </div>
+
+        {/* ── EMERGENCY CTA BUTTONS ──────────────────────────────── */}
+        <div className="w-full max-w-md space-y-4">
           <Link
-            to="/login"
-            className="rounded bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            to="/emergency"
+            className="flex items-center justify-center gap-3 w-full bg-red-600 hover:bg-red-700 text-white text-2xl font-black py-6 rounded-2xl shadow-xl transition-all hover:scale-[1.02] hover:shadow-2xl active:scale-[0.98]"
           >
-            Authority login
+            ⚠️ {t("emergency_check")}
+          </Link>
+
+          <Link
+            to="/find-shelter"
+            className="flex items-center justify-center gap-3 w-full bg-blue-700 hover:bg-blue-800 text-white text-2xl font-black py-6 rounded-2xl shadow-xl transition-all hover:scale-[1.02] hover:shadow-2xl active:scale-[0.98]"
+          >
+            🏠 {t("find_shelter")}
           </Link>
         </div>
-      </header>
 
-      <main>
-        {/* Hero */}
-        <section className="border-b border-border bg-secondary">
-          <div className="mx-auto max-w-6xl px-4 py-14">
-            <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-              National Disaster Response Initiative
-            </p>
-            <h1 className="mt-3 max-w-3xl text-3xl leading-tight font-semibold text-foreground md:text-4xl">
-              24-hour advance landslide warning for every village at risk
-            </h1>
-            <p className="mt-4 max-w-2xl text-sm leading-relaxed text-muted-foreground md:text-base">
-              BHOOSAKTHI ingests rainfall, soil moisture and terrain data, scores landslide
-              probability for each village, and gives district officers a single console to
-              authorise alerts, track citizen safety and coordinate shelters.
-            </p>
-            <div className="mt-7 flex flex-wrap gap-3">
-              <Link
-                to="/login"
-                className="inline-flex items-center gap-2 rounded bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-              >
-                Authority login
-                <ArrowRight aria-hidden className="size-4" />
-              </Link>
-              <a
-                href="#citizen-app"
-                className="inline-flex items-center gap-2 rounded border border-input bg-card px-5 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
-              >
-                <Smartphone aria-hidden className="size-4" />
-                Citizen app
-              </a>
-            </div>
+        {/* Language switcher pills for mobile */}
+        <div className="sm:hidden">
+          <LanguageSwitcher variant="pills" />
+        </div>
 
-            <dl className="mt-10 grid gap-px overflow-hidden rounded border border-border bg-border sm:grid-cols-3">
-              {[
-                { k: "Advance warning", v: "24 hours" },
-                { k: "Prediction granularity", v: "Village / ward" },
-                { k: "Recall on held-out seasons", v: "0.89" },
-              ].map((s) => (
-                <div key={s.k} className="bg-card px-4 py-3">
-                  <dt className="text-xs text-muted-foreground">{s.k}</dt>
-                  <dd className="mt-1 text-lg font-semibold text-foreground">{s.v}</dd>
-                </div>
-              ))}
-            </dl>
+        {/* ── EMERGENCY CONTACT STRIP ───────────────────────────── */}
+        <div className="w-full max-w-md bg-red-50 border border-red-200 rounded-2xl p-4 space-y-3">
+          <p className="font-bold text-red-800 text-sm">{t("emergency_contacts")}</p>
+          <div className="grid grid-cols-4 gap-2">
+            <a href="tel:100"
+              className="bg-red-600 text-white rounded-xl p-3 text-center font-black text-sm hover:bg-red-700 transition-colors">
+              📞<br />100
+            </a>
+            <a href="tel:108"
+              className="bg-red-600 text-white rounded-xl p-3 text-center font-black text-sm hover:bg-red-700 transition-colors">
+              🚑<br />108
+            </a>
+            <a href="tel:1078"
+              className="bg-red-600 text-white rounded-xl p-3 text-center font-black text-sm hover:bg-red-700 transition-colors">
+              🌊<br />1078
+            </a>
+            <a href="tel:01124363260"
+              className="bg-red-700 text-white rounded-xl p-3 text-center font-black text-xs hover:bg-red-800 transition-colors">
+              NDRF
+            </a>
           </div>
-        </section>
+        </div>
 
-        {/* Project description */}
-        <section className="mx-auto max-w-6xl px-4 py-12">
-          <h2 className="text-lg font-semibold text-foreground">About the platform</h2>
-          <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground">
-            Landslides in the Western Ghats develop over hours of antecedent rainfall on saturated,
-            steep terrain — conditions that are measurable before failure occurs. BHOOSAKTHI
-            continuously collects those measurements, fuses them into a per-village feature table,
-            and applies a trained machine learning model to estimate the probability of a landslide
-            in the next 24 hours. Predictions above the alert threshold are escalated to the
-            district officer, who approves or rejects each alert. Approved alerts reach residents
-            through the citizen mobile application with the nearest shelter and evacuation route,
-            while officers see live safety check-ins to prioritise rescue teams.
-          </p>
-        </section>
-
-        {/* Three features */}
-        <section className="border-y border-border bg-secondary">
-          <div className="mx-auto max-w-6xl px-4 py-12">
-            <h2 className="text-lg font-semibold text-foreground">Core capabilities</h2>
-            <div className="mt-6 grid gap-4 md:grid-cols-3">
-              {features.map(({ icon: Icon, title, body }) => (
-                <article key={title} className="rounded border border-border bg-card p-5">
-                  <Icon aria-hidden className="size-5 text-primary" />
-                  <h3 className="mt-3 text-sm font-semibold text-foreground">{title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{body}</p>
-                </article>
-              ))}
-            </div>
+        {/* ── HOW IT WORKS ─────────────────────────────────────── */}
+        <div className="w-full max-w-2xl">
+          <h2 className="text-lg font-bold text-muted-foreground mb-4">How It Works</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {[
+              { icon: "📊", title: "1. Enter Conditions", desc: "Tell us about rainfall, soil, and slope in your area" },
+              { icon: "🤖", title: "2. AI Analyzes", desc: "Our model checks 50+ risk factors in under 2 seconds" },
+              { icon: "🚨", title: "3. Instant Alert", desc: "Get clear RED/YELLOW/GREEN warning with next steps" },
+            ].map((item) => (
+              <div key={item.title} className="bg-card border rounded-2xl p-4 text-center space-y-2">
+                <div className="text-4xl">{item.icon}</div>
+                <p className="font-bold text-sm">{item.title}</p>
+                <p className="text-xs text-muted-foreground">{item.desc}</p>
+              </div>
+            ))}
           </div>
-        </section>
+        </div>
 
-        {/* Access paths */}
-        <section id="citizen-app" className="mx-auto max-w-6xl px-4 py-12">
-          <div className="grid gap-4 md:grid-cols-2">
-            <article className="rounded border border-border p-6">
-              <h2 className="text-sm font-semibold text-foreground">For disaster authorities</h2>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                Access the district console to review today's risk map, authorise alerts, monitor
-                citizen check-ins and manage shelter occupancy. Access is restricted to registered
-                officers and every action is written to an audit log.
-              </p>
-              <Link
-                to="/login"
-                className="mt-5 inline-flex items-center gap-2 rounded bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-              >
-                Sign in to console
-                <ArrowRight aria-hidden className="size-4" />
-              </Link>
-            </article>
-
-            <article className="rounded border border-border p-6">
-              <h2 className="text-sm font-semibold text-foreground">For citizens</h2>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                The mobile application delivers approved alerts, cached offline shelter maps,
-                turn-by-turn evacuation routes, and one-tap "I'm Safe" and "Need Help" reporting.
-                Location is shared only during an active alert and only with consent.
-              </p>
-              <p className="mt-5 inline-flex items-center gap-2 rounded border border-input px-4 py-2 text-sm text-muted-foreground">
-                <Smartphone aria-hidden className="size-4" />
-                Android release · distributed by the district authority
-              </p>
-            </article>
-          </div>
-        </section>
+        {/* Authority login link */}
+        <div className="pb-4">
+          <Link
+            to="/login"
+            className="text-sm text-muted-foreground hover:text-foreground underline-offset-4 hover:underline"
+          >
+            {t("authority_login")} →
+          </Link>
+        </div>
       </main>
 
-      <footer className="border-t border-border bg-secondary">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-6 text-xs text-muted-foreground">
-          <p>© 2026 BHOOSAKTHI · Landslide Early Warning &amp; Response Platform</p>
-          <p>
-            Data: NASA GPM IMERG · NASA SMAP · SRTM DEM · IMD Forecast API · Census of India
-          </p>
-        </div>
+      {/* ── FOOTER ──────────────────────────────────────────────── */}
+      <footer className="border-t border-border py-4 px-4 text-center text-xs text-muted-foreground">
+        SAFEGROUND · {t("free_service")} · Built for India 🇮🇳
       </footer>
     </div>
   );

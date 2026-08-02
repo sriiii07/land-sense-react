@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { clearAuthToken, getCurrentUser } from "./api";
+import { clearAuthToken, getCurrentUser, getToken } from "./api";
 
 export type AuthUser = {
   id: number;
@@ -24,7 +24,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const refreshUser = async () => {
-    const token = typeof window !== "undefined" ? window.localStorage.getItem("landsense.token") : null;
+    const token = getToken();
     if (!token) {
       setUser(null);
       setLoading(false);

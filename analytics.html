@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Analytics — SAFEGROUND AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/style.css" />
+<style>
+  .chart-box { background: #fff; padding: 20px; border: 1px solid var(--color-border); border-radius: 6px; }
+  .chart-box canvas { max-height: 260px; }
+  .chart-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .chart-sub { font-size: 12px; color: var(--color-text-muted); margin-bottom: 14px; }
+  .kpi-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+  .kpi-card { background: #fff; border: 1px solid var(--color-border); border-radius: 6px; padding: 14px; text-align: center; }
+  .kpi-val { font-size: 24px; font-weight: 700; color: var(--color-primary); }
+  .kpi-lbl { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-muted); font-weight: 600; margin-top: 4px; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="js/data.js"></script>
+<script src="js/layout.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const avgRisk = APP_DATA.villages.reduce((s,v)=>s+v.risk,0) / APP_DATA.villages.length;
+  const totalPop = APP_DATA.villages.reduce((s,v)=>s+v.population,0);
+  const activeModel = APP_DATA.modelPerformance.find(m => m.model === APP_DATA.activeModel);
+
+  const content = `
+    <div class="kpi-strip">
+      <div class="kpi-card"><div class="kpi-val">${(avgRisk*100).toFixed(0)}%</div><div class="kpi-lbl">Avg Risk Score</div></div>
+      <div class="kpi-card"><div class="kpi-val">${totalPop.toLocaleString()}</div><div class="kpi-lbl">Population Covered</div></div>
+      <div class="kpi-card"><div class="kpi-val">${(activeModel.auc*100).toFixed(0)}%</div><div class="kpi-lbl">Model ROC-AUC</div></div>
+      <div class="kpi-card"><div class="kpi-val">${APP_DATA.predictionHistory.length}</div><div class="kpi-lbl">Predictions Logged</div></div>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="chart-box">
+        <div class="chart-title">Rainfall Trend (Last 7 Days)</div>
+        <div class="chart-sub">Daily total, district average · millimetres</div>
+        <canvas id="rainChart"></canvas>
+      </div>
+      <div class="chart-box">
+        <div class="chart-title">Risk Score Trend</div>
+        <div class="chart-sub">Peak risk score of highest-risk village</div>
+        <canvas id="riskChart"></canvas>
+      </div>
+    </div>
+
+    <div class="grid grid-2 mt-4">
+      <div class="chart-box">
+        <div class="chart-title">Village Risk Distribution</div>
+        <div class="chart-sub">Breakdown of villages by current risk level</div>
+        <canvas id="distChart"></canvas>
+      </div>
+      <div class="chart-box">
+        <div class="chart-title">Model Performance Comparison</div>
+        <div class="chart-sub">Validation metrics · ${APP_DATA.activeModel} is deployed</div>
+        <canvas id="modelChart"></canvas>
+      </div>
+    </div>
+
+    <div class="panel mt-4">
+      <div class="panel-header">
+        <h2>Prediction History Log</h2>
+        <span class="panel-meta">Officer decisions on recent AI alerts</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Date</th><th>Village</th><th class="num">Risk Score</th><th>Risk Level</th><th>Officer Decision</th></tr>
+          </thead>
+          <tbody>
+            ${APP_DATA.predictionHistory.map(p => `
+              <tr>
+                <td>${p.date}</td>
+                <td><strong>${p.village}</strong></td>
+                <td class="num">${(p.risk*100).toFixed(0)}%</td>
+                <td>${riskBadge(p.level)}</td>
+                <td>${p.outcome}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+
+  renderLayout("analytics", "Analytics & Model Performance", content, initCharts);
+});
+
+function initCharts() {
+  // Rainfall trend line chart
+  new Chart(document.getElementById("rainChart"), {
+    type: "line",
+    data: {
+      labels: APP_DATA.rainfallTrend.map(r => r.day),
+      datasets: [{
+        label: "Rainfall (mm)",
+        data: APP_DATA.rainfallTrend.map(r => r.mm),
+        borderColor: "#10336B",
+        backgroundColor: "rgba(16,51,107,0.1)",
+        fill: true,
+        tension: 0.3
+      }]
+    },
+    options: { responsive: true, plugins: { legend: { display: false } } }
+  });
+
+  // Risk trend
+  new Chart(document.getElementById("riskChart"), {
+    type: "line",
+    data: {
+      labels: APP_DATA.riskTrend.map(r => r.day),
+      datasets: [{
+        label: "Risk Score",
+        data: APP_DATA.riskTrend.map(r => r.risk * 100),
+        borderColor: "#B3261E",
+        backgroundColor: "rgba(179,38,30,0.1)",
+        fill: true,
+        tension: 0.3
+      }]
+    },
+    options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { max: 100 } } }
+  });
+
+  // Distribution pie
+  const dist = { low: 0, moderate: 0, high: 0, critical: 0 };
+  APP_DATA.villages.forEach(v => dist[v.riskLevel]++);
+  new Chart(document.getElementById("distChart"), {
+    type: "doughnut",
+    data: {
+      labels: ["Low", "Moderate", "High", "Critical"],
+      datasets: [{
+        data: [dist.low, dist.moderate, dist.high, dist.critical],
+        backgroundColor: ["#1E7B34", "#A66A00", "#B4460C", "#B3261E"]
+      }]
+    },
+    options: { responsive: true }
+  });
+
+  // Model performance
+  new Chart(document.getElementById("modelChart"), {
+    type: "bar",
+    data: {
+      labels: APP_DATA.modelPerformance.map(m => m.model),
+      datasets: [
+        { label: "Precision", data: APP_DATA.modelPerformance.map(m => m.precision), backgroundColor: "#10336B" },
+        { label: "Recall",    data: APP_DATA.modelPerformance.map(m => m.recall),    backgroundColor: "#1E7B34" },
+        { label: "F1",        data: APP_DATA.modelPerformance.map(m => m.f1),        backgroundColor: "#A66A00" },
+        { label: "AUC",       data: APP_DATA.modelPerformance.map(m => m.auc),       backgroundColor: "#B3261E" }
+      ]
+    },
+    options: { responsive: true, scales: { y: { max: 1 } } }
+  });
+}
+</script>
+</body>
+</html>

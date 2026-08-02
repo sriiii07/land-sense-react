@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dashboard — SAFEGROUND AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<div id="app"></div>
+
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<script src="js/data.js"></script>
+<script src="js/layout.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const critical = APP_DATA.villages.filter(v => v.riskLevel === "critical");
+  const high = APP_DATA.villages.filter(v => v.riskLevel === "high");
+  const moderate = APP_DATA.villages.filter(v => v.riskLevel === "moderate");
+  const totalPop = APP_DATA.villages.reduce((s, v) => s + v.population, 0);
+  const notEvac = APP_DATA.villages.reduce((s, v) => s + v.notEvacuated, 0);
+
+  const criticalVillage = critical[0];
+
+  const alertBar = criticalVillage ? `
+    <div class="alert-bar" id="alertBar">
+      <div class="alert-bar-text">
+        <i data-lucide="alert-triangle"></i>
+        <div>
+          <strong>Critical alert pending: ${criticalVillage.name}, ${criticalVillage.district}</strong>
+          <span>Risk score ${(criticalVillage.risk * 100).toFixed(0)}% · Population ${criticalVillage.population.toLocaleString()} · ${criticalVillage.notEvacuated} residents not yet evacuated</span>
+        </div>
+      </div>
+      <div class="alert-bar-actions">
+        <button class="btn btn--critical" onclick="approveAlert()"><i data-lucide="check"></i> Approve & Broadcast</button>
+        <button class="btn btn--outline" onclick="dismissAlert()"><i data-lucide="x"></i> Dismiss</button>
+      </div>
+    </div>` : "";
+
+  const statCards = `
+    <div class="grid grid-4">
+      <div class="stat-card">
+        <div class="stat-label">Villages Monitored</div>
+        <div class="stat-value">${APP_DATA.villages.length}</div>
+        <div class="stat-sub">Across ${new Set(APP_DATA.villages.map(v=>v.district)).size} districts</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Critical Alerts</div>
+        <div class="stat-value" style="color:var(--color-critical);">${critical.length}</div>
+        <div class="stat-sub">${high.length} high · ${moderate.length} moderate</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Population At Risk</div>
+        <div class="stat-value">${totalPop.toLocaleString()}</div>
+        <div class="stat-sub">In monitored villages</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Awaiting Evacuation</div>
+        <div class="stat-value" style="color:var(--color-high);">${notEvac}</div>
+        <div class="stat-sub">Across all high-risk villages</div>
+      </div>
+    </div>
+  `;
+
+  // AI COMMAND PANEL DATA
+  const topV = [...APP_DATA.villages].sort((a,b)=>b.risk-a.risk)[0];
+  const pop = topV.population;
+  const elderly = Math.round(pop * 0.12);
+  const children = Math.round(pop * 0.28);
+  const disabled = Math.round(pop * 0.04);
+  const buses = Math.ceil(pop / 45);
+  const shelters = Math.ceil(pop / 200);
+  const volunteers = Math.ceil(pop / 30);
+  const successProb = 94;
+
+  const aiCommandPanel = [
+    '<div class="panel ai-command-panel mt-4">',
+      '<div class="ai-command-header">',
+        '<div class="ai-command-title">',
+          '<div class="ai-pulse-dot"></div>',
+          '<div><h2>🧠 AI Command Recommendation</h2>',
+          '<span class="ai-command-sub">Real-time evacuation intelligence · Model v2.4.1</span></div>',
+        '</div>',
+        '<div class="ai-confidence">',
+          '<div class="ai-confidence-label">AI Confidence</div>',
+          '<div class="ai-confidence-value">96%</div>',
+        '</div>',
+      '</div>',
+      '<div class="ai-command-body">',
+        '<div class="ai-recommendation-box">',
+          '<div class="ai-rec-label">🚨 RECOMMENDED ACTION</div>',
+          '<div class="ai-rec-action">Immediate Phased Evacuation — ' + topV.name + '</div>',
+          '<div class="ai-rec-reason">Soil saturation at 87% · Rainfall exceeds 2018 threshold · ' + (topV.risk*100).toFixed(0) + '% landslide probability within 18 hours</div>',
+        '</div>',
+        '<div class="ai-countdown-box">',
+          '<div class="ai-countdown-label">⏱ EVACUATION WINDOW CLOSES IN</div>',
+          '<div class="ai-countdown-timer" id="aiCountdown">--:--:--</div>',
+          '<div class="ai-countdown-sub">After this window, road access becomes critical</div>',
+        '</div>',
+      '</div>',
+      '<div class="ai-metrics-grid">',
+        '<div class="ai-metric-card"><div class="ai-metric-icon">👥</div><div class="ai-metric-label">Affected</div><div class="ai-metric-value">' + pop.toLocaleString() + '</div></div>',
+        '<div class="ai-metric-card priority"><div class="ai-metric-icon">👴</div><div class="ai-metric-label">Elderly</div><div class="ai-metric-value">' + elderly + '</div></div>',
+        '<div class="ai-metric-card priority"><div class="ai-metric-icon">🧒</div><div class="ai-metric-label">Children</div><div class="ai-metric-value">' + children + '</div></div>',
+        '<div class="ai-metric-card priority"><div class="ai-metric-icon">♿</div><div class="ai-metric-label">Disabled</div><div class="ai-metric-value">' + disabled + '</div></div>',
+      '</div>',
+      '<div class="ai-resources-section">',
+        '<div class="ai-section-title">📦 RESOURCE ALLOCATION</div>',
+        '<div class="ai-resources-grid">',
+          '<div class="ai-resource"><span class="ai-resource-icon">🚌</span><span class="ai-resource-count">' + buses + '</span><span class="ai-resource-label">Buses</span></div>',
+          '<div class="ai-resource"><span class="ai-resource-icon">🏫</span><span class="ai-resource-count">' + shelters + '</span><span class="ai-resource-label">Shelters</span></div>',
+          '<div class="ai-resource"><span class="ai-resource-icon">🦺</span><span class="ai-resource-count">' + volunteers + '</span><span class="ai-resource-label">Volunteers</span></div>',
+          '<div class="ai-resource"><span class="ai-resource-icon">🚑</span><span class="ai-resource-count">6</span><span class="ai-resource-label">Ambulances</span></div>',
+          '<div class="ai-resource"><span class="ai-resource-icon">👮</span><span class="ai-resource-count">12</span><span class="ai-resource-label">Police</span></div>',
+        '</div>',
+      '</div>',
+      '<div class="ai-success-section">',
+        '<div class="ai-success-header">',
+          '<span class="ai-section-title">✅ EVACUATION SUCCESS PROBABILITY</span>',
+          '<span class="ai-success-percent">' + successProb + '%</span>',
+        '</div>',
+        '<div class="ai-success-bar"><div class="ai-success-fill" id="aiSuccessBar" style="width:0%"></div></div>',
+        '<div class="ai-success-note">Based on ' + buses + ' buses, ' + shelters + ' shelters, ' + volunteers + ' volunteers · 87% road accessibility</div>',
+      '</div>',
+      '<div class="ai-actions">',
+        '<button class="ai-approve-btn" id="deployBtn">🚀 APPROVE & DEPLOY MISSION</button>',
+        '<button class="ai-modify-btn">✏️ Modify Plan</button>',
+        '<button class="ai-defer-btn">⏸ Defer 30 min</button>',
+      '</div>',
+    '</div>'
+  ].join('');
+
+  const riskTable = `
+    <div class="panel mt-4">
+      <div class="panel-header">
+        <h2>Village Risk Overview</h2>
+        <span class="panel-meta">Live risk scores · sorted highest first</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Village</th><th>District</th><th class="num">Population</th>
+              <th class="num">Risk Score</th><th>Risk Level</th>
+              <th class="num">72h Rainfall</th><th class="num">Slope</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${[...APP_DATA.villages].sort((a,b)=>b.risk-a.risk).map(v => `
+              <tr>
+                <td><strong>${v.name}</strong></td>
+                <td>${v.district}</td>
+                <td class="num">${v.population.toLocaleString()}</td>
+                <td class="num"><strong>${(v.risk*100).toFixed(0)}%</strong></td>
+                <td>${riskBadge(v.riskLevel)}</td>
+                <td class="num">${v.precip72} mm</td>
+                <td class="num">${v.slope}°</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+
+  const explanationPanel = criticalVillage ? `
+    <div class="panel mt-4">
+      <div class="panel-header">
+        <h2>Why is ${criticalVillage.name} critical?</h2>
+        <span class="panel-meta">Top model feature contributions</span>
+      </div>
+      ${APP_DATA.riskExplanation.map(f => `
+        <div class="explain-row">
+          <div class="explain-row-top"><strong>${f.feature}</strong><span>${(f.contribution*100).toFixed(0)}%</span></div>
+          <div class="explain-bar-track"><div class="explain-bar-fill" style="width:${f.contribution*100}%"></div></div>
+          <div class="explain-note">${f.note}</div>
+        </div>
+      `).join("")}
+    </div>
+  ` : "";
+
+  renderLayout("dashboard", "Command Dashboard", alertBar + statCards + aiCommandPanel + riskTable + explanationPanel);
+
+  // AI PANEL ANIMATIONS
+  setTimeout(function() {
+    var bar = document.getElementById('aiSuccessBar');
+    if (bar) bar.style.width = successProb + '%';
+    var total = 63735;
+    var timerEl = document.getElementById('aiCountdown');
+    function tick() {
+      var h = Math.floor(total / 3600);
+      var m = Math.floor((total % 3600) / 60);
+      var s = total % 60;
+      if (timerEl) timerEl.textContent = 
+        String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+      total--;
+      if (total < 0) total = 0;
+    }
+    tick();
+    setInterval(tick, 1000);
+    var btn = document.getElementById('deployBtn');
+    if (btn) btn.onclick = function() {
+      btn.innerHTML = '⏳ DEPLOYING...';
+      btn.disabled = true;
+      setTimeout(function() {
+        btn.innerHTML = '✅ MISSION DEPLOYED';
+        btn.style.background = 'linear-gradient(135deg, #059669, #10b981)';
+        alert('🚀 Mission Deployed!\n\n✓ ' + buses + ' buses dispatched\n✓ ' + shelters + ' shelters activated\n✓ ' + volunteers + ' volunteers alerted\n✓ SMS sent to ' + pop.toLocaleString() + ' citizens');
+      }, 1500);
+    };
+  }, 200);
+});
+
+function approveAlert() {
+  const bar = document.getElementById("alertBar");
+  bar.classList.add("is-resolved");
+  bar.querySelector(".alert-bar-text i").setAttribute("data-lucide", "check-circle-2");
+  bar.querySelector(".alert-bar-text strong").textContent = "Alert approved and broadcast to registered citizens.";
+  bar.querySelector(".alert-bar-text span").textContent = "SMS + push notifications dispatched. Rescue teams notified.";
+  bar.querySelector(".alert-bar-actions").innerHTML = '<span class="text-muted" style="font-size:13px;">Broadcast complete</span>';
+  if (window.lucide) lucide.createIcons();
+}
+
+function dismissAlert() {
+  const bar = document.getElementById("alertBar");
+  bar.classList.add("is-dismissed");
+  bar.querySelector(".alert-bar-text i").setAttribute("data-lucide", "x-circle");
+  bar.querySelector(".alert-bar-text strong").textContent = "Alert dismissed by officer.";
+  bar.querySelector(".alert-bar-text span").textContent = "Village will continue to be monitored. Decision logged.";
+  bar.querySelector(".alert-bar-actions").innerHTML = '<span class="text-muted" style="font-size:13px;">Dismissed</span>';
+  if (window.lucide) lucide.createIcons();
+}
+</script>
+</body>
+</html>

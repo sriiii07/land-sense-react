@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>My Safety Dashboard — SAFEGROUND AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="css/style.css" />
+<style>
+  body { background: var(--color-surface); }
+  .citizen-wrap { max-width: 900px; margin: 0 auto; padding: 20px; }
+  .citizen-header {
+    background: #fff;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .citizen-header .brand { color: var(--color-primary); }
+  .citizen-header-right { display: flex; gap: 12px; align-items: center; }
+  .lang-select {
+    padding: 6px 10px; border: 1px solid var(--color-border); border-radius: 6px; font-size: 13px; background: #fff;
+  }
+
+  .risk-hero {
+    padding: 32px 24px;
+    border-radius: 10px;
+    text-align: center;
+    color: #fff;
+    margin-bottom: 20px;
+  }
+  .risk-hero.critical { background: linear-gradient(135deg, #B3261E 0%, #8f1f19 100%); }
+  .risk-hero.high     { background: linear-gradient(135deg, #B4460C 0%, #8a3608 100%); }
+  .risk-hero.moderate { background: linear-gradient(135deg, #A66A00 0%, #8a5700 100%); }
+  .risk-hero.low      { background: linear-gradient(135deg, #1E7B34 0%, #175f28 100%); }
+  .risk-hero-icon { font-size: 56px; margin-bottom: 12px; }
+  .risk-hero-title { font-size: 28px; font-weight: 800; margin-bottom: 8px; }
+  .risk-hero-village { font-size: 15px; opacity: 0.95; margin-bottom: 12px; }
+  .risk-hero-msg { font-size: 15px; opacity: 0.95; line-height: 1.5; max-width: 600px; margin: 0 auto; }
+
+  .status-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .status-btn {
+    padding: 22px;
+    border-radius: 10px;
+    border: 2px solid;
+    background: #fff;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    transition: transform 100ms ease;
+  }
+  .status-btn:hover { transform: translateY(-2px); }
+  .status-btn.safe   { color: var(--color-success);  border-color: var(--color-success); }
+  .status-btn.help   { color: var(--color-critical); border-color: var(--color-critical); }
+  .status-btn.safe:hover { background: var(--color-success-bg); }
+  .status-btn.help:hover { background: var(--color-critical-bg); }
+  .status-btn.is-active { transform: scale(1.02); }
+  .status-btn.safe.is-active { background: var(--color-success); color: #fff; }
+  .status-btn.help.is-active { background: var(--color-critical); color: #fff; }
+
+  .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+  .info-card {
+    background: #fff;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: 18px;
+  }
+  .info-card h3 { font-size: 14px; margin-bottom: 12px; color: var(--color-primary); display: flex; align-items: center; gap: 8px; }
+  .info-card h3 i { width: 16px; height: 16px; }
+
+  .weather-mini { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .weather-mini-item { text-align: center; padding: 10px; background: var(--color-surface); border-radius: 6px; }
+  .weather-mini-val { font-size: 20px; font-weight: 700; color: var(--color-primary); }
+  .weather-mini-lbl { font-size: 11px; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.03em; }
+
+  .shelter-item {
+    background: var(--color-surface);
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+  }
+  .shelter-item-name { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+  .shelter-item-meta { font-size: 12px; color: var(--color-text-muted); margin-bottom: 8px; }
+  .shelter-item-btns { display: flex; gap: 6px; }
+  .shelter-item .btn { padding: 6px 10px; font-size: 12px; }
+
+  .emergency-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .emergency-btn {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 16px 8px;
+    background: var(--color-critical);
+    color: #fff;
+    border-radius: 8px;
+    font-weight: 700;
+    text-decoration: none;
+    font-size: 13px;
+  }
+  .emergency-btn:hover { background: #8f1f19; }
+  .emergency-btn-icon { font-size: 24px; margin-bottom: 4px; }
+  .emergency-btn-num { font-size: 18px; font-weight: 800; }
+
+  #citizenMiniMap { height: 320px; border-radius: 8px; border: 1px solid var(--color-border); }
+
+  .safety-list { list-style: none; padding: 0; margin: 0; }
+  .safety-list li {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--color-border);
+    font-size: 13.5px;
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .safety-list li:last-child { border-bottom: none; }
+  .safety-list li::before { content: "✅"; flex-shrink: 0; }
+
+  @media (max-width: 720px) {
+    .card-grid { grid-template-columns: 1fr; }
+    .status-buttons { grid-template-columns: 1fr; }
+    .emergency-grid { grid-template-columns: 1fr; }
+    .risk-hero-title { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+<div class="citizen-wrap">
+
+  <!-- Header -->
+  <div class="citizen-header">
+    <div class="brand">
+      <i data-lucide="mountain-snow"></i> SAFEGROUND AI
+    </div>
+    <div class="citizen-header-right">
+      <span id="citizenName" style="font-size:13px; font-weight:600;">Loading...</span>
+      <select class="lang-select" onchange="alert('Language change: ' + this.value + ' (feature coming soon)')">
+        <option>English</option>
+        <option>മലയാളം</option>
+        <option>हिन्दी</option>
+        <option>தமிழ்</option>
+      </select>
+      <a href="index.html" class="btn btn--outline btn--sm">Sign Out</a>
+    </div>
+  </div>
+
+  <!-- Risk hero -->
+  <div id="riskHero" class="risk-hero moderate">
+    <div class="risk-hero-icon">🟡</div>
+    <div class="risk-hero-title">Loading your area's risk...</div>
+    <div class="risk-hero-village" id="riskVillage">Detecting location...</div>
+  </div>
+
+  <!-- Status buttons -->
+  <div class="status-buttons">
+    <button class="status-btn safe" onclick="setStatus('safe')" id="btnSafe">
+      ✅ I'm Safe
+    </button>
+    <button class="status-btn help" onclick="setStatus('help')" id="btnHelp">
+      🆘 Need Help
+    </button>
+  </div>
+
+  <!-- Weather + Shelters -->
+  <div class="card-grid">
+    <div class="info-card">
+      <h3><i data-lucide="cloud-rain"></i> Live Weather</h3>
+      <div class="weather-mini" id="weatherMini">
+        <div class="weather-mini-item"><div class="weather-mini-val">—</div><div class="weather-mini-lbl">Loading...</div></div>
+      </div>
+    </div>
+
+    <div class="info-card">
+      <h3><i data-lucide="home"></i> Nearest Shelters</h3>
+      <div id="nearestShelters"><p class="text-muted" style="font-size:13px;">Finding nearest shelters...</p></div>
+    </div>
+  </div>
+
+  <!-- Map -->
+  <div class="info-card mb-4" style="margin-bottom:20px;">
+    <h3><i data-lucide="map"></i> Your Area & Nearby Shelters</h3>
+    <div id="citizenMiniMap"></div>
+  </div>
+
+  <!-- Emergency calls -->
+  <div class="info-card" style="margin-bottom:20px;">
+    <h3><i data-lucide="phone"></i> Emergency Contacts</h3>
+    <div class="emergency-grid">
+      <a href="tel:100" class="emergency-btn">
+        <div class="emergency-btn-icon">👮</div>
+        <div>Police</div>
+        <div class="emergency-btn-num">100</div>
+      </a>
+      <a href="tel:108" class="emergency-btn">
+        <div class="emergency-btn-icon">🚑</div>
+        <div>Ambulance</div>
+        <div class="emergency-btn-num">108</div>
+      </a>
+      <a href="tel:1078" class="emergency-btn">
+        <div class="emergency-btn-icon">🌊</div>
+        <div>Disaster</div>
+        <div class="emergency-btn-num">1078</div>
+      </a>
+    </div>
+  </div>
+
+  <!-- Safety instructions -->
+  <div class="info-card">
+    <h3><i data-lucide="shield-check"></i> What To Do During a Landslide</h3>
+    <ul class="safety-list">
+      <li>Move to higher ground immediately if you hear rumbling sounds</li>
+      <li>Stay away from slopes, riverbanks, and steep hillsides</li>
+      <li>Do NOT use roads that pass under or near slopes</li>
+      <li>Keep an emergency kit ready: water, food, torch, radio, first aid</li>
+      <li>Charge your phone fully during heavy rains</li>
+      <li>Listen to official announcements — SAFEGROUND alerts are verified by an officer</li>
+      <li>Help elderly and disabled neighbours evacuate first</li>
+      <li>After landslide: check for injuries, avoid damaged buildings, report to authorities</li>
+    </ul>
+  </div>
+
+</div>
+
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="js/data.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  if (window.lucide) lucide.createIcons();
+
+  // Load user
+  const userJson = sessionStorage.getItem("safeground_user");
+  const user = userJson ? JSON.parse(userJson) : { full_name: "Citizen" };
+  document.getElementById("citizenName").textContent = `👤 ${user.full_name}`;
+
+  // Get location
+  // Try saved location from homepage first
+  const saved = localStorage.getItem("safeground_user_location");
+  if (saved) {
+    try {
+      const loc = JSON.parse(saved);
+      if (loc.lat && loc.lng) {
+        loadEverything(loc.lat, loc.lng);
+        return;
+      }
+    } catch {}
+  }
+
+  // Fallback: ask for permission
+  if (!navigator.geolocation) {
+    showRisk("moderate", "Location unavailable", "Please enable location for personalized alerts.");
+    loadEverything(11.685, 76.132);
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      const { latitude, longitude } = pos.coords;
+      localStorage.setItem("safeground_user_location", JSON.stringify({ lat: latitude, lng: longitude, timestamp: Date.now() }));
+      loadEverything(latitude, longitude);
+    },
+    () => {
+      loadEverything(11.685, 76.132);
+    }
+  );
+});
+function loadEverything(lat, lng) {
+  loadRiskFromWeather(lat, lng);
+  loadMiniMap(lat, lng);
+  loadNearestShelters(lat, lng);
+}
+
+async function loadRiskFromWeather(lat, lng) {
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,relative_humidity_2m,precipitation,wind_speed_10m&daily=precipitation_sum&forecast_days=1&timezone=auto`;
+    const res = await fetch(url);
+    const data = await res.json();
+    const cur = data.current;
+    const rain24 = data.daily.precipitation_sum[0] || 0;
+
+    // Weather mini
+    document.getElementById("weatherMini").innerHTML = `
+      <div class="weather-mini-item"><div class="weather-mini-val">${cur.temperature_2m}°C</div><div class="weather-mini-lbl">Temperature</div></div>
+      <div class="weather-mini-item"><div class="weather-mini-val">${rain24} mm</div><div class="weather-mini-lbl">Rain (24h)</div></div>
+      <div class="weather-mini-item"><div class="weather-mini-val">${cur.relative_humidity_2m}%</div><div class="weather-mini-lbl">Humidity</div></div>
+      <div class="weather-mini-item"><div class="weather-mini-val">${cur.wind_speed_10m}</div><div class="weather-mini-lbl">Wind km/h</div></div>
+    `;
+
+    // Risk heuristic
+    const riskScore = Math.min(100, (rain24 * 0.6) + (cur.relative_humidity_2m * 0.4));
+    let level = "low", icon = "🟢", title = "Your area is SAFE", msg = "Conditions are stable. No immediate landslide risk detected. Continue normal activities but stay aware.";
+    if (riskScore >= 80) { level = "critical"; icon = "🔴"; title = "CRITICAL — EVACUATE NOW"; msg = "Extreme landslide risk detected. Move to the nearest shelter immediately. Do not delay."; }
+    else if (riskScore >= 60) { level = "high"; icon = "🟠"; title = "HIGH RISK — Prepare to Evacuate"; msg = "Dangerous conditions. Pack essentials, keep phone charged, and be ready to move to a shelter on short notice."; }
+    else if (riskScore >= 40) { level = "moderate"; icon = "🟡"; title = "MODERATE RISK — Stay Alert"; msg = "Rainfall levels are elevated. Monitor conditions and avoid steep areas."; }
+
+    showRisk(level, title, msg, icon);
+  } catch (err) {
+    showRisk("moderate", "Unable to fetch data", "Check your connection. In doubt, stay safe.");
+  }
+}
+
+function showRisk(level, title, msg, icon) {
+  const hero = document.getElementById("riskHero");
+  hero.className = "risk-hero " + level;
+  hero.querySelector(".risk-hero-icon").textContent = icon || "🟡";
+  hero.querySelector(".risk-hero-title").textContent = title;
+  hero.querySelector(".risk-hero-village").textContent = "📍 Based on your current location";
+  if (!hero.querySelector(".risk-hero-msg")) {
+    const p = document.createElement("div");
+    p.className = "risk-hero-msg";
+    p.textContent = msg;
+    hero.appendChild(p);
+  } else {
+    hero.querySelector(".risk-hero-msg").textContent = msg;
+  }
+}
+
+function loadMiniMap(lat, lng) {
+  const map = L.map("citizenMiniMap", { maxZoom: 8 }).setView([lat, lng], 8);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "© OpenStreetMap"
+  }).addTo(map);
+  L.marker([lat, lng]).addTo(map).bindPopup("<strong>You are here</strong>").openPopup();
+
+  APP_DATA.shelters.forEach(sh => {
+    L.marker([sh.lat, sh.lon], {
+      icon: L.divIcon({
+        className: "",
+        html: '<div style="background:#10336B;color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border:2px solid #fff;">🏠</div>',
+        iconSize: [28, 28], iconAnchor: [14, 14]
+      })
+    }).addTo(map).bindPopup(`<strong>${sh.name}</strong><br>${sh.district}<br>Available: ${sh.capacity - sh.occupied} spots`);
+  });
+}
+
+function loadNearestShelters(lat, lng) {
+  const withDist = APP_DATA.shelters
+    .map(sh => ({ ...sh, dist: haversine(lat, lng, sh.lat, sh.lon) }))
+    .sort((a, b) => a.dist - b.dist)
+    .slice(0, 3);
+
+  document.getElementById("nearestShelters").innerHTML = withDist.map(sh => `
+    <div class="shelter-item">
+      <div class="shelter-item-name">${sh.name}</div>
+      <div class="shelter-item-meta">${sh.district} · ${sh.dist.toFixed(1)} km away · ${sh.capacity - sh.occupied} spots available</div>
+      <div class="shelter-item-btns">
+        <a href="https://www.google.com/maps/dir/?api=1&destination=${sh.lat},${sh.lon}" target="_blank" class="btn btn--primary">
+          <i data-lucide="navigation"></i> Directions
+        </a>
+      </div>
+    </div>
+  `).join("");
+  if (window.lucide) lucide.createIcons();
+}
+
+const API_BASE = "http://127.0.0.1:8002";
+
+async function setStatus(status) {
+  document.getElementById("btnSafe").classList.remove("is-active");
+  document.getElementById("btnHelp").classList.remove("is-active");
+  const btn = document.getElementById("btn" + (status === "safe" ? "Safe" : "Help"));
+  btn.classList.add("is-active");
+  const originalText = btn.innerHTML;
+  btn.innerHTML = "⏳ Sending...";
+
+  const user = JSON.parse(sessionStorage.getItem("safeground_user") || "null");
+  if (!user) {
+    alert("⚠️ You must be logged in to update your status. Redirecting to login...");
+    window.location.href = "login.html?role=citizen";
+    return;
+  }
+
+  const token = sessionStorage.getItem("safeground_token");
+  const backendStatus = status === "safe" ? "I'm Safe" : "Need Help";
+
+  try {
+    const res = await fetch(`${API_BASE}/api/citizens/status`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        user_id: user.id,
+        status: backendStatus
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || `HTTP ${res.status}`);
+    }
+
+    btn.innerHTML = originalText;
+
+    // Show floating confirmation
+    const toast = document.createElement("div");
+    toast.style.cssText = `
+      position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+      background: ${status === "safe" ? "#1E7B34" : "#B3261E"};
+      color: white; padding: 16px 24px; border-radius: 10px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3); z-index: 100000;
+      font-weight: 700; font-size: 15px; max-width: 90%;
+      animation: slideDown 0.4s ease;
+    `;
+    toast.innerHTML = status === "safe"
+      ? "✅ Marked as SAFE — Authorities notified. Stay alert!"
+      : "🆘 HELP REQUEST SENT — Rescue team dispatched. Stay where you are if safe.";
+    document.body.appendChild(toast);
+
+    const style = document.createElement("style");
+    style.textContent = `@keyframes slideDown { from { transform: translate(-50%, -100px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }`;
+    document.head.appendChild(style);
+
+    setTimeout(() => toast.remove(), 4000);
+
+  } catch (err) {
+    btn.innerHTML = originalText;
+    alert("⚠️ Could not update status: " + err.message + "\n\nMake sure you're logged in as a citizen.");
+  }
+}
+
+function haversine(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const toRad = d => d * Math.PI / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+</script>
+</body>
+</html>

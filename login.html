@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sign in &mdash; SAFEGROUND AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<div class="auth-wrap">
+  <div class="auth-card">
+    <a href="index.html" class="brand"><i data-lucide="mountain-snow"></i> SAFEGROUND <span class="brand-accent">AI</span></a>
+
+    <!-- Role switch: Authority / Citizen -->
+    <div class="role-switch" role="tablist" aria-label="Sign in as">
+      <button type="button" id="roleAuthorityBtn" role="tab" aria-selected="true">
+        <i data-lucide="shield"></i> Authority
+      </button>
+      <button type="button" id="roleCitizenBtn" role="tab" aria-selected="false">
+        <i data-lucide="user"></i> Citizen
+      </button>
+    </div>
+
+    <!-- ===================== AUTHORITY LOGIN ===================== -->
+    <div id="authorityPanel">
+      <h1>Authority Sign In</h1>
+      <p class="auth-sub">For registered Disaster Management Authority officers only.</p>
+
+      <div class="auth-alert" id="authorityError">
+        <i data-lucide="alert-circle"></i>
+        <span id="authorityErrorText">Incorrect email or password.</span>
+      </div>
+      <div class="auth-success" id="authoritySuccess">
+        <i data-lucide="check-circle-2"></i>
+        <span>Signed in — redirecting to your dashboard&hellip;</span>
+      </div>
+
+      <form id="authorityForm" novalidate>
+        <div class="field">
+          <label for="authorityEmail">Official email</label>
+          <input type="email" id="authorityEmail" name="email" placeholder="you@ddma.kerala.gov.in" required autocomplete="username" />
+        </div>
+        <div class="field">
+          <label for="authorityPassword">Password</label>
+          <input type="password" id="authorityPassword" name="password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" required autocomplete="current-password" />
+        </div>
+        <div class="auth-row">
+          <label style="display:flex;align-items:center;gap:6px;font-weight:500;">
+            <input type="checkbox" id="authorityRemember" style="width:auto;" /> Keep me signed in
+          </label>
+          <a href="#" id="forgotPasswordLink">Forgot password?</a>
+        </div>
+        <button type="submit" class="btn btn--primary btn--block" id="authoritySubmitBtn">
+          <i data-lucide="log-in"></i> Sign In
+        </button>
+      </form>
+
+      <!-- Forgot password mini-form, hidden until requested -->
+      <div id="forgotPasswordPanel" style="display:none;">
+        <div class="divider"></div>
+        <h1 style="font-size:16px;">Reset your password</h1>
+        <p class="auth-sub" style="margin-bottom:var(--space-4);">Enter your official email and we'll send reset instructions.</p>
+        <div class="auth-success" id="forgotSuccess">
+          <i data-lucide="check-circle-2"></i>
+          <span>If that email is registered, a reset link has been sent.</span>
+        </div>
+        <form id="forgotPasswordForm" novalidate>
+          <div class="field">
+            <label for="forgotEmail">Official email</label>
+            <input type="email" id="forgotEmail" required />
+          </div>
+          <button type="submit" class="btn btn--primary btn--block">Send reset link</button>
+        </form>
+        <button type="button" class="btn btn--outline btn--block mt-4" id="backToLoginBtn">Back to sign in</button>
+      </div>
+    </div>
+
+    <!-- ===================== CITIZEN LOGIN / REGISTER ===================== -->
+    <div id="citizenPanel" style="display:none;">
+      <h1>Citizen Access</h1>
+      <p class="auth-sub">Get alerts for your village and report your status during an emergency.</p>
+
+      <div class="subtab-row">
+        <button type="button" class="subtab is-active" id="citizenLoginTab">Log In</button>
+        <button type="button" class="subtab" id="citizenRegisterTab">Register</button>
+      </div>
+
+      <!-- --- Citizen: Log in --- -->
+      <div id="citizenLoginPanel">
+        <div class="auth-alert" id="citizenLoginError">
+          <i data-lucide="alert-circle"></i>
+          <span id="citizenLoginErrorText">Incorrect email or password.</span>
+        </div>
+        <div class="auth-success" id="citizenLoginSuccess">
+          <i data-lucide="check-circle-2"></i>
+          <span>Signed in — redirecting&hellip;</span>
+        </div>
+        <form id="citizenLoginForm" novalidate>
+          <div class="field">
+            <label for="citizenLoginEmail">Email</label>
+            <input type="email" id="citizenLoginEmail" required autocomplete="username" />
+          </div>
+          <div class="field">
+            <label for="citizenLoginPassword">Password</label>
+            <input type="password" id="citizenLoginPassword" required autocomplete="current-password" />
+          </div>
+          <button type="submit" class="btn btn--primary btn--block">
+            <i data-lucide="log-in"></i> Log In
+          </button>
+        </form>
+      </div>
+
+      <!-- --- Citizen: Register --- -->
+      <div id="citizenRegisterPanel" style="display:none;">
+        <div class="location-banner">
+          <i data-lucide="map-pin"></i>
+          <div style="flex:1;">
+            <strong>Location access</strong>
+            We use your location only to route you to the nearest shelter and confirm your village during
+            an active alert. It is never shared or tracked outside an emergency.
+            <div class="location-banner-actions">
+              <button type="button" class="btn btn--outline btn--sm" id="requestLocationBtn">
+                <i data-lucide="crosshair"></i> Allow location access
+              </button>
+            </div>
+            <div class="location-status" id="locationStatus"></div>
+          </div>
+        </div>
+
+        <div class="auth-alert" id="citizenRegisterError">
+          <i data-lucide="alert-circle"></i>
+          <span id="citizenRegisterErrorText">Something went wrong. Please try again.</span>
+        </div>
+        <div class="auth-success" id="citizenRegisterSuccess">
+          <i data-lucide="check-circle-2"></i>
+          <span>Account created — redirecting&hellip;</span>
+        </div>
+
+        <form id="citizenRegisterForm" novalidate>
+          <div class="field">
+            <label for="registerName">Full name</label>
+            <input type="text" id="registerName" required />
+          </div>
+          <div class="form-row-2">
+            <div class="field">
+              <label for="registerEmail">Email</label>
+              <input type="email" id="registerEmail" required autocomplete="username" />
+            </div>
+            <div class="field">
+              <label for="registerVillage">Village</label>
+              <select id="registerVillage" required>
+                <option value="" disabled selected>Select village</option>
+                <option value="1024">Maramalakari, Wayanad</option>
+                <option value="2048">Elappully, Palakkad</option>
+                <option value="3012">Kavalangad, Kottayam</option>
+                <option value="4055">Vellarimala, Kozhikode</option>
+                <option value="5090">Kokkayar, Idukki</option>
+                <option value="6110">Peruvanthanam, Idukki</option>
+                <option value="7020">Meppadi, Wayanad</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label for="registerPassword">Password</label>
+            <input type="password" id="registerPassword" required minlength="6" autocomplete="new-password" />
+            <p class="field-hint">At least 6 characters.</p>
+          </div>
+          <div class="field">
+            <label style="display:flex;align-items:flex-start;gap:8px;font-weight:500;">
+              <input type="checkbox" id="registerConsent" required style="width:auto;margin-top:3px;" />
+              <span>I consent to SAFEGROUND AI storing my village and location to deliver landslide alerts and evacuation routing.</span>
+            </label>
+          </div>
+          <button type="submit" class="btn btn--primary btn--block">
+            <i data-lucide="user-plus"></i> Create account
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <p class="auth-sub mt-5" style="margin-bottom:0;"><a href="index.html">&larr; Back to home</a></p>
+  </div>
+</div>
+
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<script src="js/login.js"></script>
+</body>
+</html>

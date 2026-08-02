@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Citizen Monitoring — SAFEGROUND AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="css/style.css" />
+<style>
+  #citizenMap { height: 460px; border-radius: 6px; border: 1px solid var(--color-border); }
+  .heat-legend { display: flex; gap: 16px; margin-top: 12px; font-size: 12px; flex-wrap: wrap; align-items: center; }
+  .heat-legend-item { display: flex; align-items: center; gap: 6px; }
+  .heat-dot { width: 14px; height: 14px; border-radius: 50%; opacity: 0.65; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="js/data.js"></script>
+<script src="js/layout.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const helpCount = APP_DATA.citizens.filter(c => c.status === "help").length;
+  const safeCount = APP_DATA.citizens.filter(c => c.status === "safe").length;
+  const noRespCount = APP_DATA.citizens.filter(c => c.status === "none").length;
+
+  const content = `
+    <div class="grid grid-4">
+      <div class="stat-card">
+        <div class="stat-label">Registered Citizens</div>
+        <div class="stat-value">${APP_DATA.citizens.length}</div>
+        <div class="stat-sub">Across ${new Set(APP_DATA.citizens.map(c=>c.village)).size} villages</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Need Help</div>
+        <div class="stat-value" style="color:var(--color-critical);">${helpCount}</div>
+        <div class="stat-sub">Rescue dispatch required</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Marked Safe</div>
+        <div class="stat-value" style="color:var(--color-success);">${safeCount}</div>
+        <div class="stat-sub">Confirmed via app</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">No Response</div>
+        <div class="stat-value" style="color:var(--color-neutral);">${noRespCount}</div>
+        <div class="stat-sub">Follow-up needed</div>
+      </div>
+    </div>
+
+    <div class="panel mt-4">
+      <div class="panel-header">
+        <h2>Live Citizen Density Map</h2>
+        <span class="panel-meta">Circle size = citizen count in area · color = status</span>
+      </div>
+      <div id="citizenMap"></div>
+      <div class="heat-legend">
+        <div class="heat-legend-item"><span class="heat-dot" style="background:#B3261E;"></span> Needs Help (large circle)</div>
+        <div class="heat-legend-item"><span class="heat-dot" style="background:#1E7B34;"></span> Safe (medium circle)</div>
+        <div class="heat-legend-item"><span class="heat-dot" style="background:#5B6472;"></span> No Response (small circle)</div>
+      </div>
+    </div>
+
+    <div class="panel mt-4">
+      <div class="panel-header">
+        <h2>Citizen Status Log</h2>
+        <span class="panel-meta">Last 24 hours</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Citizen ID</th><th>Name</th><th>Village</th><th>District</th><th>Status</th><th>Last Ping</th></tr>
+          </thead>
+          <tbody>
+            ${APP_DATA.citizens.map(c => `
+              <tr>
+                <td><strong>${c.id}</strong></td>
+                <td>${c.name}</td>
+                <td>${c.village}</td>
+                <td>${c.district}</td>
+                <td>${statusBadge(c.status)}</td>
+                <td class="text-muted" style="font-size:12px;">${c.lastPing}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+
+  renderLayout("citizens", "Citizen Monitoring", content, initCitizenMap);
+});
+
+function initCitizenMap() {
+  // Group citizens by village, then plot a circle per village
+  const villageMap = {};
+  APP_DATA.citizens.forEach(c => {
+    if (!villageMap[c.village]) villageMap[c.village] = { help: 0, safe: 0, none: 0, total: 0 };
+    villageMap[c.village][c.status]++;
+    villageMap[c.village].total++;
+  });
+
+  const map = L.map("citizenMap").setView([10.85, 76.27], 8);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "© OpenStreetMap"
+  }).addTo(map);
+
+  APP_DATA.villages.forEach(v => {
+    const stats = villageMap[v.name];
+    if (!stats) return;
+
+    // Priority color: any "help" = red, else safe = green, else neutral
+    let color = "#5B6472";
+    let dominantStatus = "No Response";
+    if (stats.help > 0) { color = "#B3261E"; dominantStatus = "Needs Help"; }
+    else if (stats.safe > 0) { color = "#1E7B34"; dominantStatus = "Safe"; }
+
+    // Radius based on total citizens in village
+    const radius = 3000 + (stats.total * 2500);
+
+    L.circle([v.lat, v.lon], {
+      color: color,
+      fillColor: color,
+      fillOpacity: 0.35,
+      radius: radius
+    }).addTo(map).bindPopup(`
+      <strong>${v.name}</strong><br>
+      District: ${v.district}<br>
+      Registered citizens: ${stats.total}<br>
+      🔴 Need Help: ${stats.help}<br>
+      🟢 Safe: ${stats.safe}<br>
+      ⚪ No Response: ${stats.none}<br>
+      <em>Status: ${dominantStatus}</em>
+    `);
+
+    L.marker([v.lat, v.lon]).addTo(map).bindPopup(`<strong>${v.name}</strong> — ${stats.total} citizens`);
+  });
+}
+</script>
+</body>
+</html>

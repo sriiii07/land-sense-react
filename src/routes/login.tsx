@@ -2,7 +2,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { MountainSnow, Lock } from "lucide-react";
-import { clearAuthToken, login, saveAuthToken } from "@/lib/api";
+import { clearAuthToken, login, setAuthToken } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/login")({
@@ -45,7 +45,7 @@ function LoginPage() {
 
     try {
       const response = await login(email, password);
-      saveAuthToken(response.access_token);
+      setAuthToken(response.access_token);
       await auth.refreshUser();
       navigate({ to: "/dashboard" });
     } catch (err) {
