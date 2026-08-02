@@ -425,7 +425,7 @@ Project Link: https://github.com/yourusername/safeground-ai
 
 <div align="center">
 🛡️ Built with the mission to protect lives through intelligent early warning
-Made with ❤️ for Kerala
+Made with ❤️ for the safety of people
 
 </div>
 npm run dev
