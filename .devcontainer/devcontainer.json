@@ -1,0 +1,34 @@
+{
+  "name": "SafeGround AI Dev Environment",
+  "image": "mcr.microsoft.com/devcontainers/universal:2",
+  "features": {
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.12"
+    },
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "20"
+    }
+  },
+  "postCreateCommand": "pip install -r backend/requirements.txt && npm install",
+  "forwardPorts": [8001, 5173],
+  "portsAttributes": {
+    "8001": {
+      "label": "Backend API (FastAPI)",
+      "visibility": "public"
+    },
+    "5173": {
+      "label": "Frontend (Vite)",
+      "visibility": "public"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint"
+      ]
+    }
+  }
+}

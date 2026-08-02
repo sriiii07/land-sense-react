@@ -15,7 +15,9 @@ export default defineConfig({
   },
   plugins: [react(), tailwindcss()],
   server: {
+    host: true,          // ← Expose to network (phone + Codespaces)
     port: 5173,
+    strictPort: false,   // ← Fallback to another port if 5173 is taken
     proxy: {
       "/api": {
         target: "http://127.0.0.1:8001",

@@ -6,134 +6,12 @@
 <title>SAFEGROUND AI &mdash; Landslide Early Warning &amp; Emergency Response</title>
 <meta name="description" content="SAFEGROUND AI predicts landslide risk 24 hours in advance using rainfall, soil, and terrain data, and coordinates evacuation between disaster authorities and citizens." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="css/style.css" />
-<style>
-  /* ═══════════════════════════════════════════════════════════
-     SPLASH INTRO — Big centered SAFEGROUND AI title
-     ═══════════════════════════════════════════════════════════ */
-  .splash-intro {
-    height: 100vh;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    background: linear-gradient(135deg, #0B2450 0%, #10336B 50%, #1a4a8f 100%);
-    color: #fff;
-    position: relative;
-    overflow: hidden;
-    padding: 20px;
-  }
-
-  .splash-intro::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background-image:
-      radial-gradient(circle at 20% 30%, rgba(255,255,255,0.08) 0%, transparent 50%),
-      radial-gradient(circle at 80% 70%, rgba(122, 229, 130, 0.06) 0%, transparent 50%);
-    pointer-events: none;
-  }
-
-  .splash-title {
-    font-size: clamp(3rem, 12vw, 9rem);
-    font-weight: 900;
-    letter-spacing: -0.03em;
-    line-height: 1;
-    margin: 0;
-    animation: splashFadeIn 1.2s ease-out;
-    text-shadow: 0 4px 24px rgba(0,0,0,0.3);
-  }
-
-  .splash-title .accent {
-    background: linear-gradient(135deg, #7AE582 0%, #5B9BE0 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .splash-tagline {
-    font-size: clamp(1rem, 2vw, 1.4rem);
-    font-weight: 400;
-    margin-top: 24px;
-    opacity: 0.85;
-    max-width: 700px;
-    animation: splashFadeIn 1.2s ease-out 0.3s both;
-    letter-spacing: 0.02em;
-  }
-
-  .splash-scroll-hint {
-    position: absolute;
-    bottom: 40px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.2em;
-    opacity: 0.7;
-    animation: splashFadeIn 1.2s ease-out 0.8s both, bounce 2s infinite 2s;
-    cursor: pointer;
-    color: #fff;
-    text-decoration: none;
-  }
-
-  .splash-scroll-hint:hover { opacity: 1; }
-
-  .splash-scroll-hint i {
-    width: 24px;
-    height: 24px;
-  }
-
-  @keyframes splashFadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  @keyframes bounce {
-    0%, 100% { transform: translate(-50%, 0); }
-    50% { transform: translate(-50%, -10px); }
-  }
-
-  /* Hide top nav during splash, show after scrolling */
-  .public-nav {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 1000;
-    transition: transform 0.4s ease, background 0.4s ease, box-shadow 0.4s ease;
-    transform: translateY(-100%);
-  }
-
-  .public-nav.visible {
-    transform: translateY(0);
-    background: rgba(255,255,255,0.98);
-    backdrop-filter: blur(10px);
-    box-shadow: 0 2px 20px rgba(0,0,0,0.08);
-  }
-</style>
 </head>
 <body>
 
-<!-- ============================= SPLASH INTRO ============================= -->
-<section class="splash-intro" id="splash">
-  <h1 class="splash-title">SAFEGROUND <span class="accent">AI</span></h1>
-  <p class="splash-tagline">
-    AI-powered landslide prediction  &amp; and  rescue system
-  </p>
-  <a href="#top" class="splash-scroll-hint">
-    <span>Scroll</span>
-    <i data-lucide="chevron-down"></i>
-  </a>
-</section>
-
-<header class="public-nav" id="topNav">
+<header class="public-nav" id="top">
   <div class="brand"><i data-lucide="mountain-snow"></i> SAFEGROUND <span class="brand-accent">AI</span></div>
   <nav class="public-nav-links">
     <a href="#how-it-works" class="nav-link-ghost">How it works</a>
@@ -144,9 +22,9 @@
 </header>
 
 <!-- ============================= HERO ============================= -->
-<section class="hero-v2" id="top">
+<section class="hero-v2">
   <div class="hero-v2-inner reveal">
-    <span class="hero-eyebrow"><i data-lucide="radio" style="width:13px;height:13px;"></i> Live monitoring &middot;  Disaster Management Authority</span>
+    <span class="hero-eyebrow"><i data-lucide="radio" style="width:13px;height:13px;"></i> Live monitoring &middot; Disaster Management Authority</span>
     <h1>Know a landslide is coming, <span class="text-accent">24 hours</span> before it happens.</h1>
     <p class="lede">
       SAFEGROUND AI fuses rainfall, soil moisture, and terrain data through a trained machine-learning
@@ -341,19 +219,6 @@
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 <script>
 // ═════════════════════════════════════════════════════════════
-// SHOW/HIDE TOP NAV BASED ON SCROLL PAST SPLASH
-// ═════════════════════════════════════════════════════════════
-window.addEventListener("scroll", () => {
-  const nav = document.getElementById("topNav");
-  const splashHeight = document.getElementById("splash")?.offsetHeight || window.innerHeight;
-  if (window.scrollY > splashHeight * 0.6) {
-    nav.classList.add("visible");
-  } else {
-    nav.classList.remove("visible");
-  }
-});
-
-// ═════════════════════════════════════════════════════════════
 // EMERGENCY DRILL MODE
 // Simulates the entire product flow in ~60 seconds.
 // ═════════════════════════════════════════════════════════════
@@ -367,7 +232,7 @@ function startDrill() {
       <div class="drill-header">
         <div class="drill-badge">🎮 EMERGENCY SIMULATION</div>
         <h2 id="drillTitle">Initializing drill...</h2>
-        <p id="drillSub">Simulating a real landslide event in Wayanad, State.</p>
+        <p id="drillSub">Simulating a real landslide event in Wayanad.</p>
       </div>
 
       <div class="drill-timeline">

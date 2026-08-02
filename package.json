@@ -3,18 +3,18 @@
   "private": true,
   "sideEffects": false,
   "type": "module",
-  "scripts": {
-    "dev": "node -e \"const { spawn } = require('child_process'); const procs = [spawn('npm', ['run', 'backend:dev'], { stdio: 'inherit' }), spawn('npm', ['run', 'start:frontend'], { stdio: 'inherit' })]; procs.forEach((p) => p.on('exit', (code) => code !== 0 && process.exit(code)));\"",
-    "start": "npm run dev",
-    "build": "vite build",
-    "build:dev": "vite build --mode development",
-    "preview": "vite preview",
-    "lint": "eslint .",
-    "format": "prettier --write .",
-    "backend:dev": "cd backend && C:/Users/user/AppData/Local/Python/pythoncore-3.14-64/python.exe -m uvicorn api:app --reload --port 8001",
-    "backend:start": "cd backend && C:/Users/user/AppData/Local/Python/pythoncore-3.14-64/python.exe -m uvicorn api:app --port 8001",
-    "start:frontend": "vite dev"
-  },
+"scripts": {
+  "dev": "node -e \"const { spawn } = require('child_process'); const procs = [spawn('npm', ['run', 'backend:dev'], { stdio: 'inherit', shell: true }), spawn('npm', ['run', 'start:frontend'], { stdio: 'inherit', shell: true })]; procs.forEach((p) => p.on('exit', (code) => code !== 0 && process.exit(code)));\"",
+  "start": "npm run dev",
+  "build": "vite build",
+  "build:dev": "vite build --mode development",
+  "preview": "vite preview",
+  "lint": "eslint .",
+  "format": "prettier --write .",
+"backend:dev": "cd backend && python -m uvicorn api:app --reload --host 0.0.0.0 --port 8001",
+"backend:start": "cd backend && python -m uvicorn api:app --host 0.0.0.0 --port 8001",
+  "start:frontend": "vite dev --host"
+}
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-accordion": "^1.2.12",
