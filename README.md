@@ -421,7 +421,7 @@ The 2018 and 2024 landslide victims — whose memory drives this work
 📧 Contact
 Project Maintainer: Your Name
 Email: your.email@example.com
-Project Link: https://github.com/yourusername/safeground-ai
+Project Link: (https://github.com/sriiii07/land-sense-react.git)
 
 <div align="center">
 🛡️ Built with the mission to protect lives through intelligent early warning
