@@ -376,6 +376,9 @@ Return to Authority View — Show the analytics page with model performance char
 Elevator Pitch
 "Every monsoon, Kerala loses lives to landslides because warnings arrive too late. SAFEGROUND AI uses machine learning to predict landslides 24 hours in advance with 89% accuracy, gives district officers an AI-powered command dashboard for evacuation deployment, and provides citizens with a personal safety app featuring GPS-guided shelter navigation. This isn't just prediction — it's coordinated response that saves lives."
 
+
+
+
 🔮 Future Roadmap
 Short-Term Enhancements
  Real IoT Integration — Connect actual soil moisture and rain sensors via MQTT protocol
