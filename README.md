@@ -290,7 +290,7 @@ VS Code (recommended) with Live Server extension
 Clone the Repository
 Bash
 
-git clone https://github.com/yourusername/safeground-ai.git
+git clone https://github.com/sriiii07/land-sense-react.git
 cd safeground-ai
 Backend Setup
 Bash
