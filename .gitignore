@@ -26,5 +26,8 @@ build/
 .DS_Store
 Thumbs.db
 
-# Database journals
+# Database journals (temporary SQLite locks only)
 *.db-journal
+
+# NOTE: database.db and model.joblib are intentionally committed
+# so the project runs out-of-the-box on any device.

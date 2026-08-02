@@ -202,7 +202,7 @@ function persistSession(data) {
 }
 
 function friendlyNetworkError() {
-  return "Couldn't reach the SAFEGROUND AI server. Make sure the backend is running (uvicorn api:app --port 8001) and try again.";
+  return "Couldn't reach the SAFEGROUND AI server. Make sure the backend is running (uvicorn api:app --port 8002) and try again.";
 }
 
 // ------------------------------------------------------------------

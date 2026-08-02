@@ -6,12 +6,134 @@
 <title>SAFEGROUND AI &mdash; Landslide Early Warning &amp; Emergency Response</title>
 <meta name="description" content="SAFEGROUND AI predicts landslide risk 24 hours in advance using rainfall, soil, and terrain data, and coordinates evacuation between disaster authorities and citizens." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="css/style.css" />
+<style>
+  /* ═══════════════════════════════════════════════════════════
+     SPLASH INTRO — Big centered SAFEGROUND AI title
+     ═══════════════════════════════════════════════════════════ */
+  .splash-intro {
+    height: 100vh;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background: linear-gradient(135deg, #0B2450 0%, #10336B 50%, #1a4a8f 100%);
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+    padding: 20px;
+  }
+
+  .splash-intro::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(circle at 20% 30%, rgba(255,255,255,0.08) 0%, transparent 50%),
+      radial-gradient(circle at 80% 70%, rgba(122, 229, 130, 0.06) 0%, transparent 50%);
+    pointer-events: none;
+  }
+
+  .splash-title {
+    font-size: clamp(3rem, 12vw, 9rem);
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    margin: 0;
+    animation: splashFadeIn 1.2s ease-out;
+    text-shadow: 0 4px 24px rgba(0,0,0,0.3);
+  }
+
+  .splash-title .accent {
+    background: linear-gradient(135deg, #7AE582 0%, #5B9BE0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .splash-tagline {
+    font-size: clamp(1rem, 2vw, 1.4rem);
+    font-weight: 400;
+    margin-top: 24px;
+    opacity: 0.85;
+    max-width: 700px;
+    animation: splashFadeIn 1.2s ease-out 0.3s both;
+    letter-spacing: 0.02em;
+  }
+
+  .splash-scroll-hint {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    opacity: 0.7;
+    animation: splashFadeIn 1.2s ease-out 0.8s both, bounce 2s infinite 2s;
+    cursor: pointer;
+    color: #fff;
+    text-decoration: none;
+  }
+
+  .splash-scroll-hint:hover { opacity: 1; }
+
+  .splash-scroll-hint i {
+    width: 24px;
+    height: 24px;
+  }
+
+  @keyframes splashFadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translate(-50%, 0); }
+    50% { transform: translate(-50%, -10px); }
+  }
+
+  /* Hide top nav during splash, show after scrolling */
+  .public-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    transition: transform 0.4s ease, background 0.4s ease, box-shadow 0.4s ease;
+    transform: translateY(-100%);
+  }
+
+  .public-nav.visible {
+    transform: translateY(0);
+    background: rgba(255,255,255,0.98);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+  }
+</style>
 </head>
 <body>
 
-<header class="public-nav" id="top">
+<!-- ============================= SPLASH INTRO ============================= -->
+<section class="splash-intro" id="splash">
+  <h1 class="splash-title">SAFEGROUND <span class="accent">AI</span></h1>
+  <p class="splash-tagline">
+    AI-powered landslide prediction  &amp; and  rescue system
+  </p>
+  <a href="#top" class="splash-scroll-hint">
+    <span>Scroll</span>
+    <i data-lucide="chevron-down"></i>
+  </a>
+</section>
+
+<header class="public-nav" id="topNav">
   <div class="brand"><i data-lucide="mountain-snow"></i> SAFEGROUND <span class="brand-accent">AI</span></div>
   <nav class="public-nav-links">
     <a href="#how-it-works" class="nav-link-ghost">How it works</a>
@@ -22,9 +144,9 @@
 </header>
 
 <!-- ============================= HERO ============================= -->
-<section class="hero-v2">
+<section class="hero-v2" id="top">
   <div class="hero-v2-inner reveal">
-    <span class="hero-eyebrow"><i data-lucide="radio" style="width:13px;height:13px;"></i> Live monitoring &middot; Kerala Disaster Management Authority</span>
+    <span class="hero-eyebrow"><i data-lucide="radio" style="width:13px;height:13px;"></i> Live monitoring &middot;  Disaster Management Authority</span>
     <h1>Know a landslide is coming, <span class="text-accent">24 hours</span> before it happens.</h1>
     <p class="lede">
       SAFEGROUND AI fuses rainfall, soil moisture, and terrain data through a trained machine-learning
@@ -98,7 +220,7 @@
   <div class="section-heading">
     <h2>What is SAFEGROUND AI?</h2>
     <p>
-      A prediction-to-response platform built for Kerala's landslide-prone districts. It doesn't just
+      A prediction-to-response platform built for landslide-prone districts. It doesn't just
       forecast risk &mdash; it closes the loop from satellite data to a citizen standing at a shelter door.
     </p>
   </div>
@@ -211,42 +333,29 @@
   </div>
 </section>
 
-<!-- ============================= ACCESS ============================= -->
-<section class="section section--tinted reveal" id="citizen">
-  <div class="section-heading">
-    <h2>Access the platform</h2>
-    <p>Choose the interface that matches your role.</p>
-  </div>
-  <div class="access-grid">
-    <div class="access-card">
-      <i data-lucide="shield" class="access-icon"></i>
-      <h3>Disaster Management Authority</h3>
-      <p>Review AI predictions, inspect environmental data and explanations, approve or reject alerts, and
-      prioritize rescue dispatch across affected villages.</p>
-      <a href="login.html?role=authority" class="btn btn--primary btn--block">Authority Login</a>
-    </div>
-    <div class="access-card">
-      <i data-lucide="smartphone" class="access-icon"></i>
-      <h3>Citizen</h3>
-      <p>Register with your village to receive approved alerts, see the nearest shelter and evacuation route,
-      and report your status as Safe or Need Help &mdash; even offline.</p>
-      <a href="login.html?role=citizen" class="btn btn--secondary btn--block">Citizen Login / Register</a>
-    </div>
-  </div>
-</section>
-
 <footer class="public-footer">
-  <span>&copy; 2026 SAFEGROUND AI &mdash; built for Kerala State Disaster Management Authority</span>
+  <span>&copy; 2026 SAFEGROUND AI &mdash; built for State Disaster Management Authority</span>
   <span>Hackathon demonstration build</span>
 </footer>
 
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 <script>
 // ═════════════════════════════════════════════════════════════
+// SHOW/HIDE TOP NAV BASED ON SCROLL PAST SPLASH
+// ═════════════════════════════════════════════════════════════
+window.addEventListener("scroll", () => {
+  const nav = document.getElementById("topNav");
+  const splashHeight = document.getElementById("splash")?.offsetHeight || window.innerHeight;
+  if (window.scrollY > splashHeight * 0.6) {
+    nav.classList.add("visible");
+  } else {
+    nav.classList.remove("visible");
+  }
+});
+
+// ═════════════════════════════════════════════════════════════
 // EMERGENCY DRILL MODE
 // Simulates the entire product flow in ~60 seconds.
-// Judges click "Run Emergency Drill" and watch the whole system
-// react — prediction → officer approval → citizen alert → response.
 // ═════════════════════════════════════════════════════════════
 
 function startDrill() {
@@ -258,7 +367,7 @@ function startDrill() {
       <div class="drill-header">
         <div class="drill-badge">🎮 EMERGENCY SIMULATION</div>
         <h2 id="drillTitle">Initializing drill...</h2>
-        <p id="drillSub">Simulating a real landslide event in Wayanad, Kerala.</p>
+        <p id="drillSub">Simulating a real landslide event in Wayanad, State.</p>
       </div>
 
       <div class="drill-timeline">
@@ -288,7 +397,6 @@ function startDrill() {
   `;
   document.body.appendChild(overlay);
 
-  // Inject styles
   if (!document.getElementById("drill-styles")) {
     const st = document.createElement("style");
     st.id = "drill-styles";
@@ -419,7 +527,6 @@ function drillActivate(step) {
   document.querySelectorAll(".drill-step").forEach(s => s.classList.remove("active"));
   const el = document.getElementById(`dstep-${step}`);
   if (el) el.classList.add("active");
-  // Mark previous as done
   for (let i = 1; i < step; i++) {
     document.getElementById(`dstep-${i}`)?.classList.add("done");
     document.getElementById(`dstep-${i}`)?.classList.remove("active");
@@ -435,7 +542,6 @@ async function runDrillSequence() {
   const startTime = Date.now();
   const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-  // ─── STEP 1: Data ingestion
   drillActivate(1);
   drillSetTitle("🛰️ Ingesting satellite data...", "Fetching NASA GPM rainfall + SMAP soil moisture for Wayanad district.");
   drillLog("Connecting to NASA GPM API...", "info");
@@ -451,7 +557,6 @@ async function runDrillSequence() {
   drillLog("✓ Slope analysis complete: max 31° in Maramalakari", "warn");
   await sleep(500);
 
-  // ─── STEP 2: AI prediction
   drillActivate(2);
   drillSetTitle("🧠 AI model computing risk...", "XGBoost classifier scoring 12 villages across 7 features.");
   drillLog("Loading model.joblib (XGBoost v1.2)...", "info");
@@ -467,7 +572,6 @@ async function runDrillSequence() {
   drillLog("✓ Top factor: 72h rainfall (contribution: 0.31)", "ok");
   await sleep(400);
 
-  // ─── STEP 3: Officer approval
   drillActivate(3);
   drillSetTitle("👮 Awaiting officer approval...", "District Disaster Management Officer reviewing AI recommendation.");
   drillLog("Alert queued for Officer Anil Kumar (Wayanad DDMA)", "info");
@@ -481,7 +585,6 @@ async function runDrillSequence() {
   drillLog("Decision logged to audit trail (immutable)", "info");
   await sleep(300);
 
-  // ─── STEP 4: Citizen alerts
   drillActivate(4);
   drillSetTitle("📱 Dispatching citizen alerts...", "SMS + push notifications to 1,264 registered residents.");
   drillLog("Fetching registered citizens in Maramalakari...", "info");
@@ -500,7 +603,6 @@ async function runDrillSequence() {
   drillLog("Voice call activated for elderly registrants (73 calls)", "info");
   await sleep(400);
 
-  // ─── STEP 5: Shelter routing
   drillActivate(5);
   drillSetTitle("🏠 Activating shelter network...", "Routing citizens to nearest available shelters with capacity.");
   drillLog("Scanning 5 registered shelters in Wayanad district", "info");
@@ -516,12 +618,11 @@ async function runDrillSequence() {
   drillLog("✓ 412 citizens → Kalpetta (avg 4.8 km)", "ok");
   await sleep(400);
 
-  // ─── STEP 6: Rescue coordination
   drillActivate(6);
   drillSetTitle("✅ Emergency response coordinated", "Rescue teams dispatched. Real-time citizen tracking active.");
   drillLog("NDRF team dispatched from Kalpetta base", "info");
   await sleep(400);
-  drillLog("Local police notified via Kerala Police API", "info");
+  drillLog("Local police notified via State Police API", "info");
   await sleep(400);
   drillLog("Ambulance rotation configured (108 service)", "info");
   await sleep(400);
@@ -531,18 +632,15 @@ async function runDrillSequence() {
   drillLog("DRILL COMPLETE — SYSTEM READY", "ok");
   drillLog("═══════════════════════════════════════", "ok");
 
-  // Mark last step as done
   document.getElementById(`dstep-6`).classList.add("done");
   document.getElementById(`dstep-6`).classList.remove("active");
 
-  // Reveal stats
   const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
   drillSetTitle("🎉 Drill Complete", `End-to-end response executed in ${totalTime} seconds.`);
 
   document.getElementById("drillStats").style.display = "grid";
   document.getElementById("drillActions").style.display = "flex";
 
-  // Animate counters
   animateCounter("statCitizens", 1264, 1500);
   animateCounter("statShelters", 5, 800);
   animateCounter("statLives", 1264, 1500);
@@ -568,22 +666,16 @@ function animateCounter(id, target, duration) {
 
 <script>
 // ─── Global location capture ─────────────────────────────────
-// Runs once when a user first visits. Stores in localStorage so
-// every other page (predictions, shelters, citizen, citizens)
-// can use the accurate lat/lng instead of asking again.
 (function initGlobalLocation() {
   const KEY = "safeground_user_location";
 
-  // Already have location? Skip.
   const existing = localStorage.getItem(KEY);
   if (existing) {
     console.log("📍 Location already saved:", JSON.parse(existing));
     return;
   }
 
-  // Wait for DOM
   window.addEventListener("DOMContentLoaded", () => {
-    // Show a friendly banner asking for permission
     const banner = document.createElement("div");
     banner.id = "locationBanner";
     banner.style.cssText = `
@@ -607,7 +699,6 @@ function animateCounter(id, target, duration) {
     `;
     document.body.appendChild(banner);
 
-    // Add slide-up animation
     const style = document.createElement("style");
     style.textContent = `@keyframes slideUp { from { transform: translate(-50%, 100px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }`;
     document.head.appendChild(style);
@@ -647,7 +738,6 @@ function animateCounter(id, target, duration) {
   });
 })();
 
-// ─── Helper for other pages to use ───────────────────────────
 window.SAFEGROUND_getLocation = function() {
   const saved = localStorage.getItem("safeground_user_location");
   if (!saved) return null;

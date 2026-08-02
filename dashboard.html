@@ -201,14 +201,47 @@ document.addEventListener("DOMContentLoaded", () => {
     tick();
     setInterval(tick, 1000);
     var btn = document.getElementById('deployBtn');
-    if (btn) btn.onclick = function() {
-      btn.innerHTML = '⏳ DEPLOYING...';
+        if (btn) btn.onclick = async function() {
+      btn.innerHTML = '⏳ BROADCASTING...';
       btn.disabled = true;
-      setTimeout(function() {
+
+      try {
+        const token = sessionStorage.getItem('safeground_token');
+        const response = await fetch('http://127.0.0.1:8002/api/broadcast-alert', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({
+            village_name: topV.name,
+            message: 'IMMEDIATE EVACUATION ORDERED for ' + topV.name + '. Landslide imminent within 18 hours. Move to nearest shelter NOW.',
+            risk_level: 'Critical',
+            buses: buses,
+            shelters: shelters,
+            volunteers: volunteers,
+            affected_population: pop
+          })
+        });
+
+        if (!response.ok) throw new Error('Broadcast failed');
+        const result = await response.json();
+
         btn.innerHTML = '✅ MISSION DEPLOYED';
         btn.style.background = 'linear-gradient(135deg, #059669, #10b981)';
-        alert('🚀 Mission Deployed!\n\n✓ ' + buses + ' buses dispatched\n✓ ' + shelters + ' shelters activated\n✓ ' + volunteers + ' volunteers alerted\n✓ SMS sent to ' + pop.toLocaleString() + ' citizens');
-      }, 1500);
+        alert('🚀 EMERGENCY BROADCAST SENT!\n\n' +
+              '✓ Broadcast ID: #' + result.broadcast_id + '\n' +
+              '✓ ' + buses + ' buses dispatched\n' +
+              '✓ ' + shelters + ' shelters activated\n' +
+              '✓ ' + volunteers + ' volunteers alerted\n' +
+              '✓ Live alert pushed to ALL citizens in ' + topV.name + '\n' +
+              '✓ Rescue teams notified');
+      } catch (err) {
+        console.error('Broadcast error:', err);
+        btn.innerHTML = '❌ BROADCAST FAILED';
+        btn.style.background = 'linear-gradient(135deg, #dc2626, #ef4444)';
+        alert('Failed to broadcast: ' + err.message);
+      }
     };
   }, 200);
 });

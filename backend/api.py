@@ -689,3 +689,85 @@ def update_shelter_occupancy(shelter_id: int, payload: ShelterOccupancyUpdate, c
 @app.get("/api/health", tags=["health"])
 def health_check():
     return {"status": "ok", "service": "LandSense API"}
+
+
+
+# ═══════════════════════════════════════════════════════
+# EMERGENCY BROADCAST SYSTEM (Real-time Alert Push)
+# ═══════════════════════════════════════════════════════
+
+# In-memory storage for the latest broadcast (simple + fast for demo)
+_latest_broadcast = {
+    "id": 0,
+    "active": False,
+    "village_name": "",
+    "message": "",
+    "risk_level": "",
+    "buses": 0,
+    "shelters": 0,
+    "volunteers": 0,
+    "affected_population": 0,
+    "created_at": "",
+    "created_by": "",
+}
+
+
+class BroadcastAlertRequest(BaseModel):
+    village_name: str
+    message: str
+    risk_level: str = "Critical"
+    buses: int = 0
+    shelters: int = 0
+    volunteers: int = 0
+    affected_population: int = 0
+
+
+class BroadcastAlertResponse(BaseModel):
+    success: bool
+    broadcast_id: int
+    message: str
+
+
+@app.post("/api/broadcast-alert", response_model=BroadcastAlertResponse, tags=["emergency"])
+def broadcast_alert(payload: BroadcastAlertRequest, current_user: UserOut = Depends(get_current_user)):
+    """
+    Authority triggers an emergency alert.
+    All citizens polling /api/latest-alert will receive it within seconds.
+    """
+    global _latest_broadcast
+    _latest_broadcast = {
+        "id": _latest_broadcast["id"] + 1,
+        "active": True,
+        "village_name": payload.village_name,
+        "message": payload.message,
+        "risk_level": payload.risk_level,
+        "buses": payload.buses,
+        "shelters": payload.shelters,
+        "volunteers": payload.volunteers,
+        "affected_population": payload.affected_population,
+        "created_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "created_by": current_user.full_name,
+    }
+    print(f"🚨 EMERGENCY BROADCAST #{_latest_broadcast['id']} by {current_user.full_name}: {payload.message}")
+    return BroadcastAlertResponse(
+        success=True,
+        broadcast_id=_latest_broadcast["id"],
+        message=f"Alert broadcast to all citizens in {payload.village_name}",
+    )
+
+
+@app.get("/api/latest-alert", tags=["emergency"])
+def get_latest_alert():
+    """
+    Citizens poll this endpoint every 3 seconds.
+    Returns the currently active broadcast (or inactive placeholder).
+    """
+    return _latest_broadcast
+
+
+@app.post("/api/clear-alert", tags=["emergency"])
+def clear_alert(current_user: UserOut = Depends(get_current_authority)):
+    """Authority clears the active broadcast."""
+    global _latest_broadcast
+    _latest_broadcast["active"] = False
+    return {"success": True, "message": "Alert cleared"}
