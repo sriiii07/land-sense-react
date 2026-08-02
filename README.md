@@ -412,7 +412,7 @@ Test all changes locally before submitting
 This project is licensed under the MIT License — see the LICENSE file for details.
 
 🙏 Acknowledgments
-Kerala State Disaster Management Authority (KSDMA) — for public disaster data and inspiration
+State Disaster Management Authority (KSDMA) — for public disaster data and inspiration
 India Meteorological Department (IMD) — for meteorological threshold references
 Open-Meteo — for providing free weather API access
 RainViewer — for free satellite rain radar data
